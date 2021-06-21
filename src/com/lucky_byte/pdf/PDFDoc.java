@@ -23,6 +23,12 @@
 package com.lucky_byte.pdf;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * PDF 操作类
@@ -32,6 +38,7 @@ import java.io.File;
 public class PDFDoc
 {
 	private File pdffile;
+	private Document document;
 
 	public PDFDoc(File pdffile) {
 		this.pdffile = pdffile;
@@ -48,8 +55,17 @@ public class PDFDoc
 	/**
 	 * 打开 PDF 文档进行操作
 	 * @return 成功或失败
+	 * @throws DocumentException 
+	 * @throws FileNotFoundException 
 	 */
-	public boolean open() {
+	public boolean open()
+			throws FileNotFoundException, DocumentException {
+		if (pdffile.exists()) {
+			throw new FileNotFoundException("File exists.");
+		}
+		document = new Document();
+		PdfWriter.getInstance(document, new FileOutputStream(pdffile));
+		document.open();
 		return false;
 	}
 
@@ -57,7 +73,7 @@ public class PDFDoc
 	 * 关闭 PDF 文档，关闭后不能继续操作文档
 	 */
 	public void close() {
-		
+		document.close();
 	}
 
 }
