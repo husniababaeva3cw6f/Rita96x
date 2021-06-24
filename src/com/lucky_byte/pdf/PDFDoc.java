@@ -22,9 +22,8 @@
  */
 package com.lucky_byte.pdf;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -37,19 +36,12 @@ import com.itextpdf.text.pdf.PdfWriter;
  */
 public class PDFDoc
 {
-	private File pdffile;
+	private OutputStream pdf_stream;
 	private Document document;
+	private PdfWriter writer;
 
-	public PDFDoc(File pdffile) {
-		this.pdffile = pdffile;
-	}
-
-	/**
-	 * 返回 PDF 的文件对象
-	 * @return File 对象
-	 */
-	public File getFile() {
-		return pdffile;
+	public PDFDoc(OutputStream pdf_stream) {
+		this.pdf_stream = pdf_stream;
 	}
 
 	/**
@@ -58,15 +50,11 @@ public class PDFDoc
 	 * @throws DocumentException 
 	 * @throws FileNotFoundException 
 	 */
-	public boolean open()
-			throws FileNotFoundException, DocumentException {
-		if (pdffile.exists()) {
-			throw new FileNotFoundException("File exists.");
-		}
+	public void open() throws DocumentException {
 		document = new Document();
-		PdfWriter.getInstance(document, new FileOutputStream(pdffile));
+		writer = PdfWriter.getInstance(document, pdf_stream);
+		writer.setCompressionLevel(0);
 		document.open();
-		return false;
 	}
 
 	/**

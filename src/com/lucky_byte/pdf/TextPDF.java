@@ -22,8 +22,19 @@
  */
 package com.lucky_byte.pdf;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.json.simple.parser.ParseException;
+import org.xml.sax.SAXException;
+
+import com.itextpdf.text.DocumentException;
 
 /**
  * 文本转 PDF
@@ -37,14 +48,22 @@ public class TextPDF
 	 * @param xmlfile XML 模板文件
 	 * @param jsonfile JSON 数据文件
 	 * @param pdffile 输出 PDF 文件
-	 * @throws FileNotFoundException 
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
+	 * @throws DocumentException 
+	 * @throws ParseException 
 	 */
 	static void gen(File xmlfile, File jsonfile, File pdffile)
-			throws FileNotFoundException {
+			throws ParserConfigurationException,
+					SAXException, IOException, DocumentException, ParseException {
 		if (xmlfile == null || jsonfile == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
-		TextParser parser = new TextParser(xmlfile, jsonfile, pdffile);
+		TextParser parser =
+			new TextParser(new FileInputStream(xmlfile),
+				new FileInputStream(jsonfile),
+				new FileOutputStream(pdffile));
 		parser.parse();
 	}
 
@@ -53,14 +72,24 @@ public class TextPDF
 	 * @param xmlstr XML 模板字符串
 	 * @param jsonstr JSON 数据字符串
 	 * @param pdffile 输出 PDF 文件
-	 * @throws FileNotFoundException 
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
+	 * @throws DocumentException 
+	 * @throws ParseException 
 	 */
 	static void gen(String xmlstr, String jsonstr, File pdffile)
-			throws FileNotFoundException {
+			throws ParserConfigurationException,
+					SAXException, IOException, DocumentException, ParseException {
 		if (xmlstr == null || jsonstr == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
-		TextParser parser = new TextParser(xmlstr, jsonstr, pdffile);
+		byte[] xml_bytes = xmlstr.getBytes(StandardCharsets.UTF_8);
+		byte[] json_bytes = jsonstr.getBytes(StandardCharsets.UTF_8);
+		TextParser parser =
+			new TextParser(new ByteArrayInputStream(xml_bytes),
+				new ByteArrayInputStream(json_bytes),
+				new FileOutputStream(pdffile));
 		parser.parse();
 	}
 
@@ -92,9 +121,10 @@ public class TextPDF
 					" already exists.");
 			return;
 		}
+
 		try {
 			TextPDF.gen(xmlfile, jsonfile, pdffile);
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

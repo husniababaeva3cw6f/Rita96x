@@ -22,8 +22,25 @@
  */
 package com.lucky_byte.pdf;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import com.itextpdf.text.DocumentException;
 
 /**
  * 解析 XML 模板
@@ -33,24 +50,89 @@ import java.io.FileNotFoundException;
  */
 public class TextParser
 {
-	private PDFDoc pdfdoc;
+	InputStream xml_stream;
+	InputStream json_stream;
+	OutputStream pdf_stream;
+	PDFDoc pdfdoc;
 
-	public TextParser(File xmlfile, File jsonfile, File pdffile) {
-		this(pdffile);
-	}
-	
-	public TextParser(String xmlstr, String jsonstr, File pdffile) {
-		this(pdffile);
-	}
-	
-	private TextParser(File pdffile) {
-		pdfdoc = new PDFDoc(pdffile);
+	public TextParser(InputStream xml_stream,
+			InputStream json_stream, OutputStream pdf_stream)
+					throws FileNotFoundException {
+		this.xml_stream = xml_stream;
+		this.json_stream = json_stream;
+		this.pdf_stream = pdf_stream;
+
+		pdfdoc = new PDFDoc(pdf_stream);
 	}
 
-	public void parse() throws FileNotFoundException {
-		if (pdfdoc.getFile().exists()) {
-			throw new FileNotFoundException("File exists.");
-		}
+	/**
+	 * 解析 XML 模板并生成 PDF 文档
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws DocumentException 
+	 * @throws ParseException 
+	 */
+	public void parse() throws ParserConfigurationException,
+			SAXException, IOException, DocumentException, ParseException {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(false);
+		SAXParser parser = factory.newSAXParser();
+		XMLFileHandler handler = new XMLFileHandler(this);
+		parser.parse(xml_stream, handler);
+	}
+}
+
+
+/**
+ * 解析 XML 模板，并生成 PDF 文件
+ *
+ */
+class XMLFileHandler extends DefaultHandler
+{
+	private TextParser parser;
+	private JSONParser json_parser;
+
+	public XMLFileHandler(TextParser parser)
+			throws DocumentException, IOException, ParseException {
+		this.parser = parser;
+		json_parser.parse(new BufferedReader(
+				new InputStreamReader(parser.json_stream,
+						StandardCharsets.UTF_8)));
+		parser.pdfdoc.open();
+	}
+
+	/**
+	 * 文档开始解析时回调
+	 */
+	@Override
+	public void startDocument() throws SAXException {
+	}
+
+	/**
+	 * 文档解析结束时回调
+	 */
+	@Override
+	public void endDocument() throws SAXException {
+		parser.pdfdoc.close();
+	}
+
+	/**
+	 * 元素开始时回调
+	 */
+	@Override
+	public void startElement(String namespaceURI,
+			String localName, String qName, Attributes atts)
+					throws SAXException {
+		
+	}
+
+	/**
+	 * 元素结束时回调
+	 */
+	@Override
+	public void endElement(String namespaceURI,
+			String localName, String qName) {
 		
 	}
 }
