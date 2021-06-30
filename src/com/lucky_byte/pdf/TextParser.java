@@ -29,6 +29,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.EmptyStackException;
+import java.util.List;
+import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -39,8 +43,6 @@ import org.json.simple.parser.ParseException;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import com.itextpdf.text.DocumentException;
 
 /**
  * 解析 XML 模板
@@ -74,7 +76,7 @@ public class TextParser
 	 * @throws ParseException 
 	 */
 	public void parse() throws ParserConfigurationException,
-			SAXException, IOException, DocumentException, ParseException {
+			SAXException, IOException, ParseException {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(false);
 		SAXParser parser = factory.newSAXParser();
@@ -92,14 +94,31 @@ class XMLFileHandler extends DefaultHandler
 {
 	private TextParser parser;
 	private JSONParser json_parser;
-
+	private List<TextChunk> chunk_list;
+	private Stack<TextChunk> chunk_stack;
+	private StringBuilder contents_builder;
+	
 	public XMLFileHandler(TextParser parser)
-			throws DocumentException, IOException, ParseException {
+			throws IOException, ParseException {
+		chunk_list = new ArrayList<TextChunk>();
+		chunk_stack = new Stack<TextChunk>();
+		contents_builder = new StringBuilder();
+
 		this.parser = parser;
-		json_parser.parse(new BufferedReader(
+		assert(parser != null);
+		assert(parser.json_stream != null);
+
+		InputStreamReader reader =
 				new InputStreamReader(parser.json_stream,
-						StandardCharsets.UTF_8)));
-		parser.pdfdoc.open();
+						StandardCharsets.UTF_8);
+		assert(reader != null);
+		
+		try {
+		json_parser = new JSONParser();
+		json_parser.parse(new BufferedReader(reader));
+		} catch (Exception ex) {
+			
+		}
 	}
 
 	/**
@@ -107,6 +126,9 @@ class XMLFileHandler extends DefaultHandler
 	 */
 	@Override
 	public void startDocument() throws SAXException {
+		if (!parser.pdfdoc.open()) {
+			throw new SAXException("Open document failed.");
+		}
 	}
 
 	/**
@@ -122,17 +144,58 @@ class XMLFileHandler extends DefaultHandler
 	 */
 	@Override
 	public void startElement(String namespaceURI,
-			String localName, String qName, Attributes atts)
+			String localName, String qName, Attributes attrs)
 					throws SAXException {
+		TextChunk textchunk;
 		
+		try{
+			textchunk = chunk_stack.peek();
+			textchunk.setContents(contents_builder.toString());
+		} catch (EmptyStackException ese) {
+			textchunk = new TextChunk();
+			textchunk.setAttr(attrs);
+
+			if (qName.equals("b")) {
+				textchunk.setStyle(TextChunk.STYLE_BOLD);
+			} else if (qName.equals("u")) {
+				textchunk.setStyle(TextChunk.STYLE_UNDERLINE);
+			} else if (qName.equals("i")) {
+				textchunk.setStyle(TextChunk.STYLE_ITALIC);
+			}
+			chunk_stack.push(textchunk);
+		}
 	}
 
+	/**
+	 * 标签字符串处理
+	 */
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		super.characters(ch, start, length);
+
+		String contents = new String(ch, start, length);
+		contents_builder.append(contents.trim());			
+	}
+	
 	/**
 	 * 元素结束时回调
 	 */
 	@Override
 	public void endElement(String namespaceURI,
 			String localName, String qName) {
-		
+		try {
+			TextChunk chunk = chunk_stack.pop();
+			chunk_list.add(chunk);
+			
+			if (qName.equals("title") ||
+					qName.equals("section") ||
+					qName.equals("para")) {
+				parser.pdfdoc.writePara(qName, chunk_list);
+				chunk_list.clear();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
+	
 }

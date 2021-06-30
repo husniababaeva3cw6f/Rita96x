@@ -22,11 +22,10 @@
  */
 package com.lucky_byte.pdf;
 
-import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.util.List;
 
 import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfWriter;
 
 /**
@@ -47,21 +46,50 @@ public class PDFDoc
 	/**
 	 * 打开 PDF 文档进行操作
 	 * @return 成功或失败
-	 * @throws DocumentException 
-	 * @throws FileNotFoundException 
 	 */
-	public void open() throws DocumentException {
-		document = new Document();
-		writer = PdfWriter.getInstance(document, pdf_stream);
-		writer.setCompressionLevel(0);
-		document.open();
+	public boolean open() {
+		try {
+			document = new Document();
+			writer = PdfWriter.getInstance(document, pdf_stream);
+			writer.setCompressionLevel(0);
+			document.open();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
-
+	
 	/**
 	 * 关闭 PDF 文档，关闭后不能继续操作文档
 	 */
 	public void close() {
 		document.close();
+	}
+
+	public void writePara(String qName, List<TextChunk> chunk_list) {
+		if (qName.equals("title")) {
+			writeTitle(chunk_list);
+		} else if (qName.equals("section")) {
+			writeSection(chunk_list);
+		} else if (qName.equals("para")) {
+			writeParagraph(chunk_list);
+		}
+	}
+
+	private void writeTitle(List<TextChunk> chunk_list) {
+		TextChunk chunk = chunk_list.get(0);
+		System.out.println("write title: " + chunk.getContents());
+	}
+
+	private void writeSection(List<TextChunk> chunk_list) {
+		TextChunk chunk = chunk_list.get(0);
+		System.out.println("write section: " + chunk.getContents());
+	}
+
+	private void writeParagraph(List<TextChunk> chunk_list) {
+		TextChunk chunk = chunk_list.get(0);
+		System.out.println("write para: " + chunk.getContents());
 	}
 
 }

@@ -34,8 +34,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
-import com.itextpdf.text.DocumentException;
-
 /**
  * 文本转 PDF
  * 
@@ -51,12 +49,11 @@ public class TextPDF
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
-	 * @throws DocumentException 
 	 * @throws ParseException 
 	 */
 	static void gen(File xmlfile, File jsonfile, File pdffile)
 			throws ParserConfigurationException,
-					SAXException, IOException, DocumentException, ParseException {
+					SAXException, IOException, ParseException {
 		if (xmlfile == null || jsonfile == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
@@ -75,12 +72,11 @@ public class TextPDF
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
-	 * @throws DocumentException 
 	 * @throws ParseException 
 	 */
 	static void gen(String xmlstr, String jsonstr, File pdffile)
 			throws ParserConfigurationException,
-					SAXException, IOException, DocumentException, ParseException {
+					SAXException, IOException, ParseException {
 		if (xmlstr == null || jsonstr == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
