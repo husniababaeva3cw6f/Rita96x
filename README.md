@@ -47,7 +47,10 @@ java -jar textpdf xmlfile jsonfile
 import com.lucky_byte.pdf.TextPDF;
 
 try {
-    TextPDF.gen("xmlfile", "jsonfile", "file.pdf");
+    File xmlfile = new File("path/to/xmlfile");
+    File jsonfile = new File("path/to/jsonfile");
+    File pdffile = new File("path/to/pdffile");
+    TextPDF.gen(xmlfile, jsonfile, file.pdf);
 } catch (Exception ex) {
     ex.printStackTrace();
 }
