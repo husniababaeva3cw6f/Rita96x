@@ -139,7 +139,6 @@ class XMLFileHandler extends DefaultHandler
 	 */
 	@Override
 	public void endDocument() throws SAXException {
-		parser.pdfdoc.close();
 	}
 
 	/**
@@ -159,7 +158,7 @@ class XMLFileHandler extends DefaultHandler
 			prev_chunk = chunk_stack.peek();
 			String contents = contents_builder.toString();
 			if (contents.length() > 0) {
-				prev_chunk.setContents(contents);
+				prev_chunk.setContents(contents.replace(' ', '\u00a0'));
 				contents_builder.setLength(0);
 				chunk_list.add(prev_chunk.clone());
 			}
@@ -203,18 +202,22 @@ class XMLFileHandler extends DefaultHandler
 	@Override
 	public void endElement(String namespaceURI,
 			String localName, String qName) {
-		TextChunk chunk = chunk_stack.pop();
-		String contents = contents_builder.toString();
-		if (contents.length() > 0) {
-			chunk.setContents(contents);
-			contents_builder.setLength(0);
-			chunk_list.add(chunk.clone());
-		}
+		if (qName.equals("textpdf")){
+			parser.pdfdoc.close();
+		}else{
+			TextChunk chunk = chunk_stack.pop();
+			String contents = contents_builder.toString();
+			if (contents.length() > 0) {
+				chunk.setContents(contents.replace(' ', '\u00a0'));
+				contents_builder.setLength(0);
+				chunk_list.add(chunk.clone());
+			}
 
-		for (String label : block_labels) {
-			if (label.equals(qName)) {
-				parser.pdfdoc.writePara(qName, chunk_list);
-				chunk_list.clear();
+			for (String label : block_labels) {
+				if (label.equals(qName)) {
+					parser.pdfdoc.writePara(qName, chunk_list);
+					chunk_list.clear();
+				}
 			}
 		}
 	}

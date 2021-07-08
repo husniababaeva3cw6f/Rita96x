@@ -22,12 +22,21 @@
  */
 package com.lucky_byte.pdf;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.xml.sax.Attributes;
+
+import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfChunk;
 import com.itextpdf.text.pdf.PdfWriter;
 
 /**
@@ -51,8 +60,8 @@ public class PDFDoc
 	 */
 	public boolean open() {
 		try {
-			document = new Document();
-			writer = PdfWriter.getInstance(document, pdf_stream);
+			document = new Document(PageSize.A4,50,50,50,50);
+			writer = PdfWriter.getInstance(document, pdf_stream);			 
 			writer.setCompressionLevel(0);
 			document.open();
 			return true;
@@ -70,13 +79,8 @@ public class PDFDoc
 	}
 
 	public void writePara(String qName, List<TextChunk> chunk_list) {
-		System.out.println("list size: " + chunk_list.size());
-		for (TextChunk chunk : chunk_list) {
-			System.out.println("contents: " + chunk.getContents() +
-					", Style: " + chunk.getStyle());
-		}
 		if (qName.equals("title")) {
-			writeTitle(chunk_list);
+			writeTitle(chunk_list);		
 		} else if (qName.equals("section")) {
 			writeSection(chunk_list);
 		} else if (qName.equals("para")) {
@@ -85,24 +89,114 @@ public class PDFDoc
 	}
 
 	private void writeTitle(List<TextChunk> chunk_list) {
-		TextChunk chunk = chunk_list.get(0);
-		System.out.println("write title: " + chunk.getContents());
+		System.out.println(chunk_list.get(0).getContents());
+		Font font;
+		Paragraph title = new Paragraph();
+		for(TextChunk textchunk:chunk_list){
+			Attributes attrs = textchunk.getAttr();
+			int style = textchunk.getStyle();
+			font = getChinessFont(style, attrs,"title");
+			Chunk chunk = new Chunk(textchunk.getContents(),font); 
+			title.add(chunk);
+		}
+		title.setAlignment(Element.TITLE);
 		try {
-			document.add(new Paragraph(chunk.getContents()));
+			document.add(title);
 		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
+			System.out.println("paragraph write erro");
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * 获取样式
+	 * 
+	 * @param style
+	 * @param attrs
+	 * @param qName
+	 * @return
+	 */
+	private Font getChinessFont(int style, Attributes attrs,String qName) {
+		Font font = null;
+		try {
+			/**
+			 * 黑体字
+			 */
+			BaseFont bf_HT = BaseFont.createFont("resources/SIMHEI.TTF",
+					BaseFont.IDENTITY_H,BaseFont.NOT_EMBEDDED); 
+			/**
+			 * 宋体
+			 */
+			BaseFont bf_SON = BaseFont.createFont("resources/SIMSUN.TTC,0", 
+					BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+			if (qName.equals("title")) {
+				font = new Font(bf_HT, 18, Font.BOLD);
+			} else if(qName.equals("section")){
+				font = new Font(bf_SON, 12, Font.BOLD);
+			}else{
+				font = new Font(bf_SON, 12, Font.NORMAL);
+			}			
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return font;
+		
+	}
+
 	private void writeSection(List<TextChunk> chunk_list) {
-		TextChunk chunk = chunk_list.get(0);
-		System.out.println("write section: " + chunk.getContents());
+		TextChunk tchunk = chunk_list.get(0);
+		System.out.println("write section: " + tchunk.getContents());
+		Font font;
+		Paragraph section = new Paragraph();
+		for(TextChunk textchunk:chunk_list){
+			Attributes attrs = textchunk.getAttr();
+			int style = textchunk.getStyle();
+			font = getChinessFont(style, attrs,"section");
+			Chunk chunk = new Chunk(textchunk.getContents(),font);
+			section.add(chunk);
+		}
+		section.setAlignment(Element.ALIGN_LEFT);
+		section.setSpacingBefore(10f);
+		try {
+			document.add(section);
+		} catch (DocumentException e) {
+			System.out.println("paragraph write erro");
+			e.printStackTrace();
+		}
 	}
 
 	private void writeParagraph(List<TextChunk> chunk_list) {
-		TextChunk chunk = chunk_list.get(0);
-		System.out.println("write para: " + chunk.getContents());
+		TextChunk tchunk = chunk_list.get(0);
+		System.out.println("write para: " + tchunk.getContents());
+		Font font;
+		Paragraph para = new Paragraph();
+		for(TextChunk textchunk:chunk_list){
+			Attributes attrs = textchunk.getAttr();
+			int style = textchunk.getStyle();
+			font = getChinessFont(style, attrs,"para");
+			Chunk chunk = new Chunk(textchunk.getContents(),font);
+			chunk.setSplitCharacter(new PipeSplitCharacter() {
+				
+				@Override
+				public boolean isSplitCharacter(int start,
+						int current, int end, char[] cc,
+					    PdfChunk[] ck) {
+					return false;
+				}
+			});
+			para.add(chunk);
+		}
+		para.setAlignment(Element.ALIGN_LEFT);
+		para.setFirstLineIndent(15f);
+		para.setSpacingBefore(10f);
+		try {
+			document.add(para);
+		} catch (DocumentException e) {
+			System.out.println("paragraph write erro");
+			e.printStackTrace();
+		}
 	}
 
 }
