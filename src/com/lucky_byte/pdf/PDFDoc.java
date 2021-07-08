@@ -26,6 +26,8 @@ import java.io.OutputStream;
 import java.util.List;
 
 import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 
 /**
@@ -68,6 +70,11 @@ public class PDFDoc
 	}
 
 	public void writePara(String qName, List<TextChunk> chunk_list) {
+		System.out.println("list size: " + chunk_list.size());
+		for (TextChunk chunk : chunk_list) {
+			System.out.println("contents: " + chunk.getContents() +
+					", Style: " + chunk.getStyle());
+		}
 		if (qName.equals("title")) {
 			writeTitle(chunk_list);
 		} else if (qName.equals("section")) {
@@ -80,6 +87,12 @@ public class PDFDoc
 	private void writeTitle(List<TextChunk> chunk_list) {
 		TextChunk chunk = chunk_list.get(0);
 		System.out.println("write title: " + chunk.getContents());
+		try {
+			document.add(new Paragraph(chunk.getContents()));
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void writeSection(List<TextChunk> chunk_list) {

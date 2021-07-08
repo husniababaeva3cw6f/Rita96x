@@ -35,11 +35,24 @@ public class TextChunk {
 	public void setStyle(int style) {
 		this.style = style;
 	}
+	public void addStyle(int style) {
+		this.style |= style;
+	}
+	public void delStyle(int style) {
+		this.style &= ~style;
+	}
 	public Attributes getAttr() {
 		return attr;
 	}
 	public void setAttr(Attributes attr) {
 		this.attr = attr;
 	}
-	
+
+	public TextChunk clone() {
+		TextChunk chunk = new TextChunk();
+		chunk.attr = this.attr;
+		chunk.contents = new String(this.contents);
+		chunk.style = this.style;
+		return chunk;
+	}
 }

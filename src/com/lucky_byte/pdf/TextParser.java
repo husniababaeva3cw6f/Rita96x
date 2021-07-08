@@ -98,6 +98,10 @@ class XMLFileHandler extends DefaultHandler
 	private Stack<TextChunk> chunk_stack;
 	private StringBuilder contents_builder;
 	
+	private String[] block_labels = {
+			"title", "section", "para",
+	};
+
 	public XMLFileHandler(TextParser parser)
 			throws IOException, ParseException {
 		chunk_list = new ArrayList<TextChunk>();
@@ -114,10 +118,9 @@ class XMLFileHandler extends DefaultHandler
 		assert(reader != null);
 		
 		try {
-		json_parser = new JSONParser();
-		json_parser.parse(new BufferedReader(reader));
+			json_parser = new JSONParser();
+			json_parser.parse(new BufferedReader(reader));
 		} catch (Exception ex) {
-			
 		}
 	}
 
@@ -146,24 +149,41 @@ class XMLFileHandler extends DefaultHandler
 	public void startElement(String namespaceURI,
 			String localName, String qName, Attributes attrs)
 					throws SAXException {
-		TextChunk textchunk;
+		TextChunk prev_chunk = null;
 		
-		try{
-			textchunk = chunk_stack.peek();
-			textchunk.setContents(contents_builder.toString());
-		} catch (EmptyStackException ese) {
-			textchunk = new TextChunk();
-			textchunk.setAttr(attrs);
-
-			if (qName.equals("b")) {
-				textchunk.setStyle(TextChunk.STYLE_BOLD);
-			} else if (qName.equals("u")) {
-				textchunk.setStyle(TextChunk.STYLE_UNDERLINE);
-			} else if (qName.equals("i")) {
-				textchunk.setStyle(TextChunk.STYLE_ITALIC);
-			}
-			chunk_stack.push(textchunk);
+		if (qName.equals("textpdf")) {
+			return;
 		}
+
+		try{
+			prev_chunk = chunk_stack.peek();
+			String contents = contents_builder.toString();
+			if (contents.length() > 0) {
+				prev_chunk.setContents(contents);
+				contents_builder.setLength(0);
+				chunk_list.add(prev_chunk.clone());
+			}
+		} catch (EmptyStackException ese) {
+		}
+
+		TextChunk chunk = new TextChunk();
+		chunk.setAttr(attrs);
+		if (prev_chunk != null) {
+			chunk.setStyle(prev_chunk.getStyle());
+		}
+
+		if (qName.equals("b")) {
+			chunk.addStyle(TextChunk.STYLE_BOLD);
+		} else if (qName.equals("u")) {
+			chunk.addStyle(TextChunk.STYLE_UNDERLINE);
+		} else if (qName.equals("i")) {
+			chunk.addStyle(TextChunk.STYLE_ITALIC);
+		} else if (qName.equals("value")) {
+			contents_builder.append("Value");
+			chunk.addStyle(TextChunk.STYLE_BOLD);
+			chunk.addStyle(TextChunk.STYLE_UNDERLINE);
+		}
+		chunk_stack.push(chunk);
 	}
 
 	/**
@@ -174,27 +194,28 @@ class XMLFileHandler extends DefaultHandler
 		super.characters(ch, start, length);
 
 		String contents = new String(ch, start, length);
-		contents_builder.append(contents.trim());			
+		contents_builder.append(contents.trim());
 	}
-	
+
 	/**
 	 * 元素结束时回调
 	 */
 	@Override
 	public void endElement(String namespaceURI,
 			String localName, String qName) {
-		try {
-			TextChunk chunk = chunk_stack.pop();
-			chunk_list.add(chunk);
-			
-			if (qName.equals("title") ||
-					qName.equals("section") ||
-					qName.equals("para")) {
+		TextChunk chunk = chunk_stack.pop();
+		String contents = contents_builder.toString();
+		if (contents.length() > 0) {
+			chunk.setContents(contents);
+			contents_builder.setLength(0);
+			chunk_list.add(chunk.clone());
+		}
+
+		for (String label : block_labels) {
+			if (label.equals(qName)) {
 				parser.pdfdoc.writePara(qName, chunk_list);
 				chunk_list.clear();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 	}
 	
