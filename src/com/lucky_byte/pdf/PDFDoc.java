@@ -25,8 +25,7 @@ package com.lucky_byte.pdf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-
-import org.xml.sax.Attributes;
+import java.util.Map;
 
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -35,9 +34,11 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.SplitCharacter;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfChunk;
 import com.itextpdf.text.pdf.PdfWriter;
+
 
 /**
  * PDF 操作类
@@ -46,9 +47,36 @@ import com.itextpdf.text.pdf.PdfWriter;
  */
 public class PDFDoc
 {
+	private final static int BLOCK_TITLE = 1;
+	private final static int BLOCK_SECTION = 2;
+	private final static int BLOCK_PARA = 3;
+	private final static int BLOCK_VSPACE = 4;
+
+	private Object[][] block_types = {
+			{ "title", BLOCK_TITLE },
+			{ "section", BLOCK_SECTION },
+			{ "para", BLOCK_PARA },
+			{ "vspace", BLOCK_VSPACE },
+	};
+
 	private OutputStream pdf_stream;
 	private Document document;
 	private PdfWriter writer;
+
+	private SplitCharacter split_character = new SplitCharacter() {
+		@Override
+		public boolean isSplitCharacter(int start, int current,
+				int end, char[] cc, PdfChunk[] chunk) {
+			char c;
+			if (chunk == null) {
+				c = cc[current];
+			} else {
+				int posi = Math.min(current, chunk.length - 1);
+				c = (char) chunk[posi].getUnicodeEquivalent(cc[current]);
+			}
+			return (c < ' ');
+		}
+	};
 
 	public PDFDoc(OutputStream pdf_stream) {
 		this.pdf_stream = pdf_stream;
@@ -61,7 +89,7 @@ public class PDFDoc
 	public boolean open() {
 		try {
 			document = new Document(PageSize.A4,50,50,50,50);
-			writer = PdfWriter.getInstance(document, pdf_stream);			 
+			writer = PdfWriter.getInstance(document, pdf_stream);
 			writer.setCompressionLevel(0);
 			document.open();
 			return true;
@@ -78,125 +106,192 @@ public class PDFDoc
 		document.close();
 	}
 
-	public void writePara(String qName, List<TextChunk> chunk_list) {
-		if (qName.equals("title")) {
-			writeTitle(chunk_list);		
-		} else if (qName.equals("section")) {
-			writeSection(chunk_list);
-		} else if (qName.equals("para")) {
-			writeParagraph(chunk_list);
-		}
-	}
+	/**
+	 * 通过字体文件获取 PDF 字体
+	 * @param fname 字体文件名称
+	 * @param style 字体样式
+	 * @param size 字体大小
+	 * @return
+	 * @throws DocumentException
+	 * @throws IOException
+	 */
+	private Font getFontFromFile(String fname, int style, int size)
+			throws DocumentException, IOException {
+		int font_style = 0;
 
-	private void writeTitle(List<TextChunk> chunk_list) {
-		System.out.println(chunk_list.get(0).getContents());
-		Font font;
-		Paragraph title = new Paragraph();
-		for(TextChunk textchunk:chunk_list){
-			Attributes attrs = textchunk.getAttr();
-			int style = textchunk.getStyle();
-			font = getChinessFont(style, attrs,"title");
-			Chunk chunk = new Chunk(textchunk.getContents(),font); 
-			title.add(chunk);
+		if ((style & TextChunk.STYLE_BOLD) != 0)
+			font_style |= Font.BOLD;
+
+		if ((style & TextChunk.STYLE_ITALIC) != 0) {
+			font_style |= Font.ITALIC;
 		}
-		title.setAlignment(Element.TITLE);
-		try {
-			document.add(title);
-		} catch (DocumentException e) {
-			System.out.println("paragraph write erro");
-			e.printStackTrace();
+		if ((style & TextChunk.STYLE_UNDERLINE) != 0) {
+			font_style |= Font.UNDERLINE;
 		}
+
+		BaseFont base_font = BaseFont.createFont(fname,
+				BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+
+		return new Font(base_font, size, font_style);
 	}
 
 	/**
-	 * 获取样式
-	 * 
+	 * 根据字体族获取字体
+	 * @param family
 	 * @param style
-	 * @param attrs
-	 * @param qName
+	 * @param size
 	 * @return
+	 * @throws DocumentException
+	 * @throws IOException
 	 */
-	private Font getChinessFont(int style, Attributes attrs,String qName) {
-		Font font = null;
-		try {
-			/**
-			 * 黑体字
-			 */
-			BaseFont bf_HT = BaseFont.createFont("resources/SIMHEI.TTF",
-					BaseFont.IDENTITY_H,BaseFont.NOT_EMBEDDED); 
-			/**
-			 * 宋体
-			 */
-			BaseFont bf_SON = BaseFont.createFont("resources/SIMSUN.TTC,0", 
-					BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-			if (qName.equals("title")) {
-				font = new Font(bf_HT, 18, Font.BOLD);
-			} else if(qName.equals("section")){
-				font = new Font(bf_SON, 12, Font.BOLD);
-			}else{
-				font = new Font(bf_SON, 12, Font.NORMAL);
-			}			
-		} catch (DocumentException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return font;
-		
-	}
-
-	private void writeSection(List<TextChunk> chunk_list) {
-		TextChunk tchunk = chunk_list.get(0);
-		System.out.println("write section: " + tchunk.getContents());
-		Font font;
-		Paragraph section = new Paragraph();
-		for(TextChunk textchunk:chunk_list){
-			Attributes attrs = textchunk.getAttr();
-			int style = textchunk.getStyle();
-			font = getChinessFont(style, attrs,"section");
-			Chunk chunk = new Chunk(textchunk.getContents(),font);
-			section.add(chunk);
-		}
-		section.setAlignment(Element.ALIGN_LEFT);
-		section.setSpacingBefore(10f);
-		try {
-			document.add(section);
-		} catch (DocumentException e) {
-			System.out.println("paragraph write erro");
-			e.printStackTrace();
+	private Font getFont(int family, int style, int size)
+			throws DocumentException, IOException {
+		switch (family) {
+		case TextChunk.FONT_FAMILY_HEI:
+			return getFontFromFile("resources/SIMHEI.TTF", style, size);
+		case TextChunk.FONT_FAMILY_SONG:
+			return getFontFromFile("resources/SIMSUN.TTC,0", style, size);
+		default:
+			return null;
 		}
 	}
 
-	private void writeParagraph(List<TextChunk> chunk_list) {
-		TextChunk tchunk = chunk_list.get(0);
-		System.out.println("write para: " + tchunk.getContents());
-		Font font;
+	private void setChunkFont(TextChunk text_chunk, Chunk chunk)
+			throws DocumentException, IOException {
+		Map<String, String> attrs = text_chunk.getAttrs();
+
+		String value = attrs.get("size");
+		if (value != null) {
+			try {
+				text_chunk.setFontSize(Integer.parseInt(value));
+			} catch (Exception ex) {
+				System.err.println("Font size '" + value + "' invalid.");
+			}
+		}
+
+		value = attrs.get("family");
+		if (value != null) {
+			if (value.equals("heiti")) {
+				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_HEI);
+			} else if (value.equals("songti")) {
+				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
+			} else {
+				System.err.println("Font family '" + value + "' unknown!");
+			}
+		}
+
+		if (value != null) {
+			if (value.equals("heiti")) {
+				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_HEI);
+			} else if (value.equals("songti")) {
+				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
+			} else {
+				System.err.println("Font family '" + value + "' unknown!");
+			}
+		}
+		Font font = getFont(text_chunk.getFontFamily(),
+				text_chunk.getStyle(), text_chunk.getFontSize());
+		chunk.setFont(font);
+	}
+
+	/**
+	 * 根据 TextChunk 熟悉生成 PDF Chunk 对象
+	 * @param text_chunk
+	 * @return
+	 * @throws DocumentException
+	 * @throws IOException
+	 */
+	private Chunk formatChunk(TextChunk text_chunk)
+			throws DocumentException, IOException {
+		Chunk chunk = new Chunk();
+
+		chunk.append(text_chunk.getContents());
+		setChunkFont(text_chunk, chunk);
+		return chunk;
+	}
+
+	/**
+	 * 添加一段文字到 PDF 文档
+	 * @param chunk_list
+	 * @param alignment
+	 * @param indent
+	 * @param line_space
+	 * @throws DocumentException
+	 * @throws IOException
+	 */
+	private void addParagraph(int block_type, List<TextChunk> chunk_list,
+			int alignment, float indent)
+			throws DocumentException, IOException {
 		Paragraph para = new Paragraph();
-		for(TextChunk textchunk:chunk_list){
-			Attributes attrs = textchunk.getAttr();
-			int style = textchunk.getStyle();
-			font = getChinessFont(style, attrs,"para");
-			Chunk chunk = new Chunk(textchunk.getContents(),font);
-			chunk.setSplitCharacter(new PipeSplitCharacter() {
-				
-				@Override
-				public boolean isSplitCharacter(int start,
-						int current, int end, char[] cc,
-					    PdfChunk[] ck) {
-					return false;
-				}
-			});
+		para.setAlignment(alignment);
+		para.setFirstLineIndent(indent);
+		int font_size = 0;
+
+		for(TextChunk text_chunk : chunk_list) {
+			Chunk chunk = formatChunk(text_chunk);
+			int size = text_chunk.getFontSize();
+			if (size > font_size)
+				font_size = size;
+			chunk.setSplitCharacter(split_character);
 			para.add(chunk);
 		}
-		para.setAlignment(Element.ALIGN_LEFT);
-		para.setFirstLineIndent(15f);
-		para.setSpacingBefore(10f);
-		try {
-			document.add(para);
-		} catch (DocumentException e) {
-			System.out.println("paragraph write erro");
-			e.printStackTrace();
+
+		if (block_type != BLOCK_VSPACE)
+			para.setSpacingBefore(font_size / 2);
+
+		document.add(para);
+	}
+
+	/**
+	 * 添加一块内容到 PDF 文档，块可以为 Title、Section、等等，
+	 * 参考类前面的数组定义
+	 * @param qName
+	 * @param chunk_list
+	 * @throws DocumentException
+	 * @throws IOException
+	 */
+	public void writeBlock(String qName, List<TextChunk> chunk_list)
+			throws DocumentException, IOException {
+		int block_type = -1;
+		for (int i = 0; i < block_types.length; i++) {
+			if (qName.equals(block_types[i][0])) {
+				block_type = (Integer) block_types[i][1];
+				break;
+			}
 		}
+		int font_family = TextChunk.FONT_FAMILY_SONG;
+		int font_size = 12;
+		int font_style = 0;
+		int alignment = Element.ALIGN_LEFT;
+		float indent = 0f;
+
+		switch (block_type) {
+		case BLOCK_TITLE:
+			font_family = TextChunk.FONT_FAMILY_HEI;
+			font_size = 18;
+			font_style = TextChunk.STYLE_BOLD;
+			alignment = Element.TITLE;
+			break;
+		case BLOCK_SECTION:
+			font_size = 16;
+			font_style = TextChunk.STYLE_BOLD;
+			break;
+		case BLOCK_PARA:
+			indent = 15f;
+			break;
+		case BLOCK_VSPACE:
+			break;
+		default:
+			System.out.println("Block element `" + qName + "` unknown!");
+			return;
+		}
+
+		for(TextChunk text_chunk : chunk_list) {
+			text_chunk.setFontFamily(font_family);
+			text_chunk.setFontSize(font_size);
+			text_chunk.addStyle(font_style);
+		}
+		this.addParagraph(block_type, chunk_list, alignment, indent);
 	}
 
 }

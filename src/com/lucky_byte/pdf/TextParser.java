@@ -44,6 +44,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.itextpdf.text.DocumentException;
+
 /**
  * 解析 XML 模板
  * 
@@ -99,7 +101,7 @@ class XMLFileHandler extends DefaultHandler
 	private StringBuilder contents_builder;
 	
 	private String[] block_labels = {
-			"title", "section", "para",
+			"title", "section", "para", "vspace",
 	};
 
 	public XMLFileHandler(TextParser parser)
@@ -166,7 +168,11 @@ class XMLFileHandler extends DefaultHandler
 		}
 
 		TextChunk chunk = new TextChunk();
-		chunk.setAttr(attrs);
+		if (prev_chunk != null) {
+			chunk.addAttrs(prev_chunk.getAttrs());
+		}
+		chunk.addAttrs(attrs);
+
 		if (prev_chunk != null) {
 			chunk.setStyle(prev_chunk.getStyle());
 		}
@@ -189,7 +195,8 @@ class XMLFileHandler extends DefaultHandler
 	 * 标签字符串处理
 	 */
 	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length)
+			throws SAXException {
 		super.characters(ch, start, length);
 
 		String contents = new String(ch, start, length);
@@ -201,21 +208,34 @@ class XMLFileHandler extends DefaultHandler
 	 */
 	@Override
 	public void endElement(String namespaceURI,
-			String localName, String qName) {
+			String localName, String qName) throws SAXException {
 		if (qName.equals("textpdf")){
 			parser.pdfdoc.close();
-		}else{
-			TextChunk chunk = chunk_stack.pop();
+			return;
+		}
+
+		TextChunk chunk = chunk_stack.pop();
+
+		if (qName.equals("vspace")) {
+			chunk.setContents("  ");
+			chunk_list.add(chunk.clone());
+		} else {
 			String contents = contents_builder.toString();
 			if (contents.length() > 0) {
-				chunk.setContents(contents.replace(' ', '\u00a0'));
+				chunk.setContents(contents);
 				contents_builder.setLength(0);
 				chunk_list.add(chunk.clone());
 			}
+		}
 
-			for (String label : block_labels) {
-				if (label.equals(qName)) {
-					parser.pdfdoc.writePara(qName, chunk_list);
+		for (String label : block_labels) {
+			if (label.equals(qName)) {
+				try {
+					parser.pdfdoc.writeBlock(qName, chunk_list);
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new SAXException("Write to PDF failed.");
+				} finally {
 					chunk_list.clear();
 				}
 			}
