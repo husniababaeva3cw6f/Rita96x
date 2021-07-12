@@ -111,15 +111,11 @@ class XMLFileHandler extends DefaultHandler
 		contents_builder = new StringBuilder();
 
 		this.parser = parser;
-		assert(parser != null);
-		assert(parser.json_stream != null);
 
-		InputStreamReader reader =
-				new InputStreamReader(parser.json_stream,
-						StandardCharsets.UTF_8);
-		assert(reader != null);
-		
 		try {
+			InputStreamReader reader =
+					new InputStreamReader(parser.json_stream,
+							StandardCharsets.UTF_8);
 			json_parser = new JSONParser();
 			json_parser.parse(new BufferedReader(reader));
 		} catch (Exception ex) {
