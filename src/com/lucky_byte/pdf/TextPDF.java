@@ -28,6 +28,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -94,27 +96,51 @@ public class TextPDF
 	 * @param args 命令行参数
 	 */
 	public static void main(String[] args) {
-		if (args.length < 2) {
+		List<String> args2 = new ArrayList<String>();
+		String pdf_fname = null;
+
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-o")) {
+				System.out.println("i = " + i + " size = " + args.length);
+				if (i >= args.length - 1) {
+					System.err.println("'-o' option require a argument");
+					return;
+				}
+				pdf_fname = args[i + 1];
+				i++;
+				continue;
+			} else {
+				args2.add(args[i]);
+			}
+		}
+
+		if (args2.size() < 2) {
 			System.err.println("Argument missing...");
+			System.err.println();
+			System.err.println("Usage:");
+			System.err.println("  java -jar textpdf.jar [OPTION] xmlfile jsonfile");
+			System.err.println("[Options]");
+			System.err.println("  -o filename:  Output pdf file name");
+			System.err.println();
 			return;
 		}
-		File xmlfile = new File(args[0]);
+		File xmlfile = new File(args2.get(0));
 		if (!xmlfile.exists()) {
-			System.err.println(xmlfile.getAbsolutePath() +
-					" not found.");
+			System.err.println(xmlfile.getAbsolutePath() + " not found.");
 			return;
 		}
-		File jsonfile = new File(args[1]);
+		File jsonfile = new File(args2.get(1));
 		if (!jsonfile.exists()) {
-			System.err.println(jsonfile.getAbsolutePath() +
-					" not found.");
+			System.err.println(jsonfile.getAbsolutePath() + " not found.");
 			return;
 		}
 
-		File pdffile = new File(args[0] + ".pdf");
+		if (pdf_fname == null) {
+			pdf_fname = args2.get(0) + ".pdf";
+		}
+		File pdffile = new File(pdf_fname);
 		if (pdffile.exists()) {
-			System.err.println(pdffile.getAbsolutePath() +
-					" already exists.");
+			System.err.println(pdffile.getAbsolutePath() + " already exists.");
 			return;
 		}
 
