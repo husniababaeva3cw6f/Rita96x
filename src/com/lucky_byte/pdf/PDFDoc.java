@@ -43,7 +43,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 /**
  * PDF 操作类
  * 
- * 这个类封装 PDF 相关的操作，包括写入内容、签名、水印，等等。
+ * 这个类封装 PDF 文档相关的操作，通过 iText 实现。
+ * 如果需要水印、印章等特殊效果，请参考 PDFProcess 类。
  */
 public class PDFDoc
 {
@@ -119,9 +120,10 @@ public class PDFDoc
 			throws DocumentException, IOException {
 		int font_style = 0;
 
-		if ((style & TextChunk.STYLE_BOLD) != 0)
+		// 设置字体样式
+		if ((style & TextChunk.STYLE_BOLD) != 0) {
 			font_style |= Font.BOLD;
-
+		}
 		if ((style & TextChunk.STYLE_ITALIC) != 0) {
 			font_style |= Font.ITALIC;
 		}
@@ -130,16 +132,16 @@ public class PDFDoc
 		}
 
 		BaseFont base_font = BaseFont.createFont(fname,
-				BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+				BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
 		return new Font(base_font, size, font_style);
 	}
 
 	/**
 	 * 根据字体族获取字体
-	 * @param family
-	 * @param style
-	 * @param size
+	 * @param family 字体族
+	 * @param style 字体风格
+	 * @param size 字体大小
 	 * @return
 	 * @throws DocumentException
 	 * @throws IOException
@@ -156,47 +158,49 @@ public class PDFDoc
 		}
 	}
 
+	/**
+	 * 根据 TextChunk 中字体相关的属性来设置 Chunk 的字体，字体包括：
+	 * 家族(黑体或宋体)、大小、修饰(粗体、斜体、下划线等等)。
+	 * @param text_chunk TextChunk 对象，保存了字体的属性
+	 * @param chunk PDF Chunk 对象
+	 * @throws DocumentException
+	 * @throws IOException
+	 */
 	private void setChunkFont(TextChunk text_chunk, Chunk chunk)
 			throws DocumentException, IOException {
 		Map<String, String> attrs = text_chunk.getAttrs();
 
-		String value = attrs.get("size");
+		// 设置字体族
+		String value = attrs.get("family");
+		if (value != null) {
+			if (value.equals("heiti")) {
+				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_HEI);
+			} else if (value.equals("songti")) {
+				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
+			} else {
+				System.err.println("Font family '" + value + "' unknown!");
+				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
+			}
+		}
+
+		// 设置字体大小
+		value = attrs.get("size");
 		if (value != null) {
 			try {
 				text_chunk.setFontSize(Integer.parseInt(value));
 			} catch (Exception ex) {
 				System.err.println("Font size '" + value + "' invalid.");
+				text_chunk.setFontSize(12);
 			}
 		}
 
-		value = attrs.get("family");
-		if (value != null) {
-			if (value.equals("heiti")) {
-				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_HEI);
-			} else if (value.equals("songti")) {
-				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
-			} else {
-				System.err.println("Font family '" + value + "' unknown!");
-			}
-		}
-
-		if (value != null) {
-			if (value.equals("heiti")) {
-				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_HEI);
-			} else if (value.equals("songti")) {
-				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
-			} else {
-				System.err.println("Font family '" + value + "' unknown!");
-			}
-		}
-		Font font = getFont(text_chunk.getFontFamily(),
-				text_chunk.getStyle(), text_chunk.getFontSize());
-		chunk.setFont(font);
+		chunk.setFont(getFont(text_chunk.getFontFamily(),
+				text_chunk.getStyle(), text_chunk.getFontSize()));
 	}
 
 	/**
-	 * 根据 TextChunk 熟悉生成 PDF Chunk 对象
-	 * @param text_chunk
+	 * 根据 TextChunk 的属性生成 PDF Chunk 对象
+	 * @param text_chunk TextChunk 对象
 	 * @return
 	 * @throws DocumentException
 	 * @throws IOException
@@ -212,10 +216,9 @@ public class PDFDoc
 
 	/**
 	 * 添加一段文字到 PDF 文档
-	 * @param chunk_list
-	 * @param alignment
-	 * @param indent
-	 * @param line_space
+	 * @param chunk_list chunks 列表
+	 * @param alignment 对齐方式
+	 * @param indent 首行缩进空间
 	 * @throws DocumentException
 	 * @throws IOException
 	 */
@@ -245,16 +248,16 @@ public class PDFDoc
 	/**
 	 * 添加一块内容到 PDF 文档，块可以为 Title、Section、等等，
 	 * 参考类前面的数组定义
-	 * @param qName
-	 * @param chunk_list
+	 * @param block_name 块类型名，例如 title, section 等等
+	 * @param chunk_list 本块的内容，一个块包含多个 chunk，它们通过列表保存
 	 * @throws DocumentException
 	 * @throws IOException
 	 */
-	public void writeBlock(String qName, List<TextChunk> chunk_list)
+	public void writeBlock(String block_name, List<TextChunk> chunk_list)
 			throws DocumentException, IOException {
 		int block_type = -1;
 		for (int i = 0; i < block_types.length; i++) {
-			if (qName.equals(block_types[i][0])) {
+			if (block_name.equals(block_types[i][0])) {
 				block_type = (Integer) block_types[i][1];
 				break;
 			}
@@ -282,7 +285,7 @@ public class PDFDoc
 		case BLOCK_VSPACE:
 			break;
 		default:
-			System.out.println("Block element `" + qName + "` unknown!");
+			System.out.println("Block element `" + block_name + "` unknown!");
 			return;
 		}
 
@@ -291,7 +294,7 @@ public class PDFDoc
 			text_chunk.setFontSize(font_size);
 			text_chunk.addStyle(font_style);
 		}
-		this.addParagraph(block_type, chunk_list, alignment, indent);
+		addParagraph(block_type, chunk_list, alignment, indent);
 	}
 
 }
