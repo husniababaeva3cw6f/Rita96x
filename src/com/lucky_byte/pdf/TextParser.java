@@ -156,7 +156,7 @@ class XMLFileHandler extends DefaultHandler
 			prev_chunk = chunk_stack.peek();
 			String contents = contents_builder.toString();
 			if (contents.length() > 0) {
-				prev_chunk.setContents(contents.replace(' ', '\u00a0'));
+				prev_chunk.setContents(contents);
 				contents_builder.setLength(0);
 				chunk_list.add(prev_chunk.clone());
 			}
