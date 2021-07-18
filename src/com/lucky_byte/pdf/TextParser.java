@@ -38,6 +38,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.xml.sax.Attributes;
@@ -95,10 +96,10 @@ public class TextParser
 class XMLFileHandler extends DefaultHandler
 {
 	private TextParser parser;
-	private JSONParser json_parser;
 	private List<TextChunk> chunk_list;
 	private Stack<TextChunk> chunk_stack;
 	private StringBuilder contents_builder;
+	private JSONObject json_object;
 	
 	private String[] block_labels = {
 			"title", "section", "para", "vspace",
@@ -111,15 +112,6 @@ class XMLFileHandler extends DefaultHandler
 		contents_builder = new StringBuilder();
 
 		this.parser = parser;
-
-		try {
-			InputStreamReader reader =
-					new InputStreamReader(parser.json_stream,
-							StandardCharsets.UTF_8);
-			json_parser = new JSONParser();
-			json_parser.parse(new BufferedReader(reader));
-		} catch (Exception ex) {
-		}
 	}
 
 	/**
@@ -127,6 +119,17 @@ class XMLFileHandler extends DefaultHandler
 	 */
 	@Override
 	public void startDocument() throws SAXException {
+		try {
+			InputStreamReader reader =
+					new InputStreamReader(parser.json_stream,
+							StandardCharsets.UTF_8);
+			JSONParser json_parser = new JSONParser();
+			json_object = (JSONObject) json_parser.parse(
+					new BufferedReader(reader));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new SAXException("Failed to parse JSON stream");
+		}
 		if (!parser.pdfdoc.open()) {
 			throw new SAXException("Open document failed.");
 		}
@@ -180,9 +183,25 @@ class XMLFileHandler extends DefaultHandler
 		} else if (qName.equals("i")) {
 			chunk.addStyle(TextChunk.STYLE_ITALIC);
 		} else if (qName.equals("value")) {
-			contents_builder.append("Value");
-			chunk.addStyle(TextChunk.STYLE_BOLD);
-			chunk.addStyle(TextChunk.STYLE_UNDERLINE);
+			String id = attrs.getValue("id");
+			if (id == null) {
+				System.err.println("Value element missing 'id' attribute.");
+			} else {
+				if (!json_object.containsKey(id)) {
+					System.err.println("JSON data missing key '" + id
+							+ "', please check!");
+				} else {
+					Object value = json_object.get(id);
+					if (!(value instanceof String)) {
+						System.err.println("JSON key '" + id
+								+ "' must has a string value.");
+					} else {
+						contents_builder.append(value);
+						chunk.addStyle(TextChunk.STYLE_BOLD);
+						chunk.addStyle(TextChunk.STYLE_UNDERLINE);
+					}
+				}
+			}
 		}
 		chunk_stack.push(chunk);
 	}
