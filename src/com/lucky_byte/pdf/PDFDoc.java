@@ -24,6 +24,7 @@ package com.lucky_byte.pdf;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,29 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 
 /**
+ * 一个类用于保存块默认属性
+ */
+class PDFBlockDefault
+{
+	int block_type;
+	int font_family;
+	int font_size;
+	int font_style;
+	int alignment;
+	float indent;
+
+	public PDFBlockDefault(int block_type, int family,
+			int size, int style, int alignment, float indent) {
+		this.block_type = block_type;
+		this.font_family = family;
+		this.font_size = size;
+		this.font_style = style;
+		this.alignment = alignment;
+		this.indent = indent;
+	}
+}
+
+/**
  * PDF 操作类
  * 
  * 这个类封装 PDF 文档相关的操作，通过 iText 实现。
@@ -48,10 +72,10 @@ import com.itextpdf.text.pdf.PdfWriter;
  */
 public class PDFDoc
 {
-	private final static int BLOCK_TITLE = 1;
-	private final static int BLOCK_SECTION = 2;
-	private final static int BLOCK_PARA = 3;
-	private final static int BLOCK_VSPACE = 4;
+	public final static int BLOCK_TITLE = 1;
+	public final static int BLOCK_SECTION = 2;
+	public final static int BLOCK_PARA = 3;
+	public final static int BLOCK_VSPACE = 4;
 
 	private Object[][] block_types = {
 			{ "title", BLOCK_TITLE },
@@ -59,6 +83,7 @@ public class PDFDoc
 			{ "para", BLOCK_PARA },
 			{ "vspace", BLOCK_VSPACE },
 	};
+	private List<PDFBlockDefault> block_defaults;
 
 	private OutputStream pdf_stream;
 	private Document document;
@@ -81,6 +106,22 @@ public class PDFDoc
 
 	public PDFDoc(OutputStream pdf_stream) {
 		this.pdf_stream = pdf_stream;
+		
+		block_defaults = new ArrayList<PDFBlockDefault>();
+
+		// 默认的块属性，应用程序可以通过 setBlockDefault() 来修改这些属性
+		block_defaults.add(new PDFBlockDefault(BLOCK_TITLE,
+				TextChunk.FONT_FAMILY_HEI, 18, TextChunk.STYLE_BOLD,
+				Element.ALIGN_CENTER, 0.0f));
+		block_defaults.add(new PDFBlockDefault(BLOCK_SECTION,
+				TextChunk.FONT_FAMILY_SONG, 16, TextChunk.STYLE_BOLD,
+				Element.ALIGN_LEFT, 0.0f));
+		block_defaults.add(new PDFBlockDefault(BLOCK_PARA,
+				TextChunk.FONT_FAMILY_SONG, 12, 0,
+				Element.ALIGN_LEFT, 15.0f));
+		block_defaults.add(new PDFBlockDefault(BLOCK_VSPACE,
+				TextChunk.FONT_FAMILY_SONG, 12, 0,
+				Element.ALIGN_LEFT, 0.0f));
 	}
 
 	/**
@@ -105,6 +146,100 @@ public class PDFDoc
 	 */
 	public void close() {
 		document.close();
+	}
+
+	/**
+	 * 设置块默认属性
+	 * 这个函数一次性设置所有的块默认属性，如果需要单独设置某一个属性，
+	 * 请使用下面的 setBlockDefaultXXX() 函数。
+	 * @param block_type 块类型
+	 * @param font_family 字体家族
+	 * @param font_size 字体大小
+	 * @param font_style 字体风格
+	 * @param alignment 对齐方式
+	 * @param indent 首行缩进距离
+	 */
+	public void setBlockDefault(int block_type, int font_family,
+			int font_size, int font_style, int alignment, float indent) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.font_family = font_family;
+				block.font_size = font_size;
+				block.font_style = font_style;
+				block.alignment = alignment;
+				block.indent = indent;
+				break;
+			}
+		}
+	}
+
+	/**
+	 * 设置块的默认字体家族
+	 * @param block_type
+	 * @param font_family
+	 */
+	public void setBlockDefaultFontFamily(int block_type, int font_family) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.font_family = font_family;
+				break;
+			}
+		}
+	}
+
+	/**
+	 * 设置块的默认字体大小
+	 * @param block_type
+	 * @param font_size
+	 */
+	public void setBlockDefaultFontSize(int block_type, int font_size) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.font_size = font_size;
+				break;
+			}
+		}
+	}
+
+	/**
+	 * 设置块的默认字体风格
+	 * @param block_type
+	 * @param font_style
+	 */
+	public void setBlockDefaultFontStyle(int block_type, int font_style) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.font_style = font_style;
+				break;
+			}
+		}
+	}
+
+	/**
+	 * 设置块的默认对齐方式
+	 * @param block_type
+	 * @param alignment
+	 */
+	public void setBlockDefaultAlignment(int block_type, int alignment) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.alignment = alignment;
+				break;
+			}
+		}
+	}
+
+	/** 设置块的默认首行缩进距离
+	 * @param block_type
+	 * @param indent
+	 */
+	public void setBlockDefaultIndent(int block_type, float indent) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.indent = indent;
+				break;
+			}
+		}
 	}
 
 	/**
@@ -256,45 +391,31 @@ public class PDFDoc
 	public void writeBlock(String block_name, List<TextChunk> chunk_list)
 			throws DocumentException, IOException {
 		int block_type = -1;
+
+		// 将块名称映射到内部的整数表示
 		for (int i = 0; i < block_types.length; i++) {
 			if (block_name.equals(block_types[i][0])) {
 				block_type = (Integer) block_types[i][1];
 				break;
 			}
 		}
-		int font_family = TextChunk.FONT_FAMILY_SONG;
-		int font_size = 12;
-		int font_style = 0;
-		int alignment = Element.ALIGN_LEFT;
-		float indent = 0f;
-
-		switch (block_type) {
-		case BLOCK_TITLE:
-			font_family = TextChunk.FONT_FAMILY_HEI;
-			font_size = 18;
-			font_style = TextChunk.STYLE_BOLD;
-			alignment = Element.TITLE;
-			break;
-		case BLOCK_SECTION:
-			font_size = 16;
-			font_style = TextChunk.STYLE_BOLD;
-			break;
-		case BLOCK_PARA:
-			indent = 15f;
-			break;
-		case BLOCK_VSPACE:
-			break;
-		default:
-			System.out.println("Block element `" + block_name + "` unknown!");
+		if (block_type == -1) {
+			System.err.println("Block type '" + block_name + "' unknown!");
 			return;
 		}
 
-		for(TextChunk text_chunk : chunk_list) {
-			text_chunk.setFontFamily(font_family);
-			text_chunk.setFontSize(font_size);
-			text_chunk.addStyle(font_style);
+		for (PDFBlockDefault block_default : block_defaults) {
+			if (block_default.block_type == block_type) {
+				for(TextChunk text_chunk : chunk_list) {
+					text_chunk.setFontFamily(block_default.font_family);
+					text_chunk.setFontSize(block_default.font_size);
+					text_chunk.addStyle(block_default.font_style);
+				}
+				addParagraph(block_type, chunk_list,
+						block_default.alignment, block_default.indent);
+				break;
+			}
 		}
-		addParagraph(block_type, chunk_list, alignment, indent);
 	}
 
 }
