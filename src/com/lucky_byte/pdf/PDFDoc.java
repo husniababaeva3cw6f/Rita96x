@@ -349,6 +349,40 @@ public class PDFDoc
 		return chunk;
 	}
 
+	private void formatParagraph(Paragraph para, List<TextChunk> chunk_list) {
+		// 用第一个节点来设置块的段落属性
+		TextChunk text_chunk = chunk_list.get(0);
+		if (text_chunk != null) {
+			Map<String, String> attrs = text_chunk.getAttrs();
+
+			// 设置段落对齐方式
+			String value = attrs.get("align");
+			if (value != null) {
+				if (value.equals("left")) {
+					para.setAlignment(Element.ALIGN_LEFT);
+				} else if (value.equals("center")) {
+					para.setAlignment(Element.ALIGN_CENTER);
+				} else if (value.equals("right")) {
+					para.setAlignment(Element.ALIGN_RIGHT);
+				} else {
+					System.err.println("Block alignment type '"
+							+ value + "' unknown.");
+				}
+			}
+
+			// 设置段落缩进
+			value = attrs.get("indent");
+			if (value != null) {
+				try {
+					float indent = Float.parseFloat(value);
+					para.setFirstLineIndent(indent);
+				} catch (Exception ex) {
+					System.err.println("Index attribute must be a float value");
+				}
+			}
+		}
+	}
+
 	/**
 	 * 添加一段文字到 PDF 文档
 	 * @param chunk_list chunks 列表
@@ -358,14 +392,21 @@ public class PDFDoc
 	 * @throws IOException
 	 */
 	private void addParagraph(int block_type, List<TextChunk> chunk_list,
-			int alignment, float indent)
+			PDFBlockDefault block_default)
 			throws DocumentException, IOException {
 		Paragraph para = new Paragraph();
-		para.setAlignment(alignment);
-		para.setFirstLineIndent(indent);
-		int font_size = 0;
 
+		para.setAlignment(block_default.alignment);
+		para.setFirstLineIndent(block_default.indent);
+
+		formatParagraph(para, chunk_list);
+
+		int font_size = 0;
 		for(TextChunk text_chunk : chunk_list) {
+			text_chunk.setFontFamily(block_default.font_family);
+			text_chunk.setFontSize(block_default.font_size);
+			text_chunk.addStyle(block_default.font_style);
+
 			Chunk chunk = formatChunk(text_chunk);
 			int size = text_chunk.getFontSize();
 			if (size > font_size)
@@ -406,13 +447,7 @@ public class PDFDoc
 
 		for (PDFBlockDefault block_default : block_defaults) {
 			if (block_default.block_type == block_type) {
-				for(TextChunk text_chunk : chunk_list) {
-					text_chunk.setFontFamily(block_default.font_family);
-					text_chunk.setFontSize(block_default.font_size);
-					text_chunk.addStyle(block_default.font_style);
-				}
-				addParagraph(block_type, chunk_list,
-						block_default.alignment, block_default.indent);
+				addParagraph(block_type, chunk_list, block_default);
 				break;
 			}
 		}
