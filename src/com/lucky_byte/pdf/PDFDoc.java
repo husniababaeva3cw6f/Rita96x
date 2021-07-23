@@ -35,6 +35,7 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.SplitCharacter;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfChunk;
@@ -85,6 +86,12 @@ public class PDFDoc
 	};
 	private List<PDFBlockDefault> block_defaults;
 
+	private Rectangle page_size = PageSize.A4;
+	private int page_margin_left = 50;
+	private int page_margin_right = 50;
+	private int page_margin_top = 50;
+	private int page_margin_bottom = 50;
+
 	private OutputStream pdf_stream;
 	private Document document;
 	private PdfWriter writer;
@@ -130,7 +137,8 @@ public class PDFDoc
 	 */
 	public boolean open() {
 		try {
-			document = new Document(PageSize.A4,50,50,50,50);
+			document = new Document(page_size, page_margin_left,
+					page_margin_right, page_margin_top, page_margin_bottom);
 			writer = PdfWriter.getInstance(document, pdf_stream);
 			writer.setCompressionLevel(0);
 			document.open();
@@ -140,12 +148,34 @@ public class PDFDoc
 			return false;
 		}
 	}
-	
+
 	/**
 	 * 关闭 PDF 文档，关闭后不能继续操作文档
 	 */
 	public void close() {
 		document.close();
+	}
+
+	/**
+	 * 设置页面大小
+	 * @param page_size
+	 */
+	public void setPageSize(Rectangle page_size) {
+		this.page_size = page_size;
+	}
+
+	/**
+	 * 设置页面边距
+	 * @param left
+	 * @param right
+	 * @param top
+	 * @param bottom
+	 */
+	public void setPageMargin(int left, int right, int top, int bottom) {
+		page_margin_left = left;
+		page_margin_right = right;
+		page_margin_top = top;
+		page_margin_bottom = bottom;
 	}
 
 	/**
