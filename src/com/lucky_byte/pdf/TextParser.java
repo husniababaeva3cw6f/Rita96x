@@ -46,6 +46,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Rectangle;
 
 /**
  * 解析 XML 模板
@@ -130,9 +132,6 @@ class XMLFileHandler extends DefaultHandler
 			ex.printStackTrace();
 			throw new SAXException("Failed to parse JSON stream");
 		}
-		if (!parser.pdfdoc.open()) {
-			throw new SAXException("Open document failed.");
-		}
 	}
 
 	/**
@@ -140,6 +139,64 @@ class XMLFileHandler extends DefaultHandler
 	 */
 	@Override
 	public void endDocument() throws SAXException {
+	}
+
+	private Object[][] page_size_map = {
+			{ "a0", PageSize.A0 },
+			{ "a1", PageSize.A1 },
+			{ "a2", PageSize.A2 },
+			{ "a3", PageSize.A3 },
+			{ "a4", PageSize.A4 },
+			{ "a5", PageSize.A5 },
+			{ "a6", PageSize.A6 },
+			{ "a7", PageSize.A7 },
+			{ "a8", PageSize.A8 },
+			{ "a9", PageSize.A9 },
+			{ "a10", PageSize.A10 },
+
+			{ "b0", PageSize.B0 },
+			{ "b1", PageSize.B1 },
+			{ "b2", PageSize.B2 },
+			{ "b3", PageSize.B3 },
+			{ "b4", PageSize.B4 },
+			{ "b5", PageSize.B5 },
+			{ "b6", PageSize.B6 },
+			{ "b7", PageSize.B7 },
+			{ "b8", PageSize.B8 },
+			{ "b9", PageSize.B9 },
+			{ "b10", PageSize.B10 },
+	};
+
+	private void setupPage(Attributes attrs) {
+		// 页面大小
+		String value = attrs.getValue("page-size");
+		if (value != null) {
+			for (Object[] item : page_size_map) {
+				if (value.equalsIgnoreCase((String) item[0])) {
+					parser.pdfdoc.setPageSize((Rectangle) item[1]);
+					break;
+				}
+			}
+		}
+
+		// 页面边距
+		value = attrs.getValue("page-margin");
+		if (value != null) {
+			String[] array = value.split(",");
+			if (array.length < 4) {
+				System.err.println("Page margin format error.");
+			} else {
+				try {
+					parser.pdfdoc.setPageMargin(
+							Integer.parseInt(array[0]),
+							Integer.parseInt(array[1]),
+							Integer.parseInt(array[2]),
+							Integer.parseInt(array[3]));
+				} catch (Exception ex) {
+					System.err.println("Page margin format error.");
+				}
+			}
+		}
 	}
 
 	/**
@@ -152,7 +209,22 @@ class XMLFileHandler extends DefaultHandler
 		TextChunk prev_chunk = null;
 		
 		if (qName.equals("textpdf")) {
+			if (parser.pdfdoc.isOpen()) {
+				throw new SAXException("'textpdf' must be root element.");
+			}
+
+			// 必须先设置页面属性再打开文档
+			setupPage(attrs);
+
+			if (!parser.pdfdoc.open()) {
+				throw new SAXException("Open document failed.");
+			}
 			return;
+		}
+
+		if (!parser.pdfdoc.isOpen()) {
+			throw new SAXException("Document unopen yet. "
+					+ "check your xml root element is 'textpdf'");
 		}
 
 		try{

@@ -157,6 +157,16 @@ public class PDFDoc
 	}
 
 	/**
+	 * 测试文档是否已打开
+	 * @return
+	 */
+	public boolean isOpen() {
+		if (document == null)
+			return false;
+		return document.isOpen();
+	}
+
+	/**
 	 * 设置页面大小
 	 * @param page_size
 	 */
