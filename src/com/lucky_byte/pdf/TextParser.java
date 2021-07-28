@@ -104,7 +104,7 @@ class XMLFileHandler extends DefaultHandler
 	private JSONObject json_object;
 	
 	private String[] block_labels = {
-			"title", "section", "para", "vspace",
+			"title", "section", "para",
 	};
 
 	public XMLFileHandler(TextParser parser)
@@ -303,16 +303,11 @@ class XMLFileHandler extends DefaultHandler
 
 		TextChunk chunk = chunk_stack.pop();
 
-		if (qName.equals("vspace")) {
-			chunk.setContents("  ");
+		String contents = contents_builder.toString();
+		if (contents.length() > 0) {
+			chunk.setContents(contents);
+			contents_builder.setLength(0);
 			chunk_list.add(chunk.clone());
-		} else {
-			String contents = contents_builder.toString();
-			if (contents.length() > 0) {
-				chunk.setContents(contents);
-				contents_builder.setLength(0);
-				chunk_list.add(chunk.clone());
-			}
 		}
 
 		for (String label : block_labels) {

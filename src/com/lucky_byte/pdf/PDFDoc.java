@@ -53,15 +53,20 @@ class PDFBlockDefault
 	int font_style;
 	int alignment;
 	float indent;
+	float line_space_before;
+	float line_space_after;
 
 	public PDFBlockDefault(int block_type, int family,
-			int size, int style, int alignment, float indent) {
+			int size, int style, int alignment, float indent,
+			float line_space_before, float line_space_after) {
 		this.block_type = block_type;
 		this.font_family = family;
 		this.font_size = size;
 		this.font_style = style;
 		this.alignment = alignment;
 		this.indent = indent;
+		this.line_space_before = line_space_before;
+		this.line_space_after = line_space_after;
 	}
 }
 
@@ -76,13 +81,11 @@ public class PDFDoc
 	public final static int BLOCK_TITLE = 1;
 	public final static int BLOCK_SECTION = 2;
 	public final static int BLOCK_PARA = 3;
-	public final static int BLOCK_VSPACE = 4;
 
 	private Object[][] block_types = {
 			{ "title", BLOCK_TITLE },
 			{ "section", BLOCK_SECTION },
 			{ "para", BLOCK_PARA },
-			{ "vspace", BLOCK_VSPACE },
 	};
 	private List<PDFBlockDefault> block_defaults;
 
@@ -119,16 +122,13 @@ public class PDFDoc
 		// 默认的块属性，应用程序可以通过 setBlockDefault() 来修改这些属性
 		block_defaults.add(new PDFBlockDefault(BLOCK_TITLE,
 				TextChunk.FONT_FAMILY_HEI, 18, TextChunk.STYLE_BOLD,
-				Element.ALIGN_CENTER, 0.0f));
+				Element.ALIGN_CENTER, 0.0f, 0.0f, 16.0f));
 		block_defaults.add(new PDFBlockDefault(BLOCK_SECTION,
 				TextChunk.FONT_FAMILY_SONG, 16, TextChunk.STYLE_BOLD,
-				Element.ALIGN_LEFT, 0.0f));
+				Element.ALIGN_LEFT, 0.0f, 13.0f, 0.0f));
 		block_defaults.add(new PDFBlockDefault(BLOCK_PARA,
 				TextChunk.FONT_FAMILY_SONG, 12, 0,
-				Element.ALIGN_LEFT, 15.0f));
-		block_defaults.add(new PDFBlockDefault(BLOCK_VSPACE,
-				TextChunk.FONT_FAMILY_SONG, 12, 0,
-				Element.ALIGN_LEFT, 0.0f));
+				Element.ALIGN_LEFT, 22.0f, 6.0f, 0.0f));
 	}
 
 	/**
@@ -200,7 +200,8 @@ public class PDFDoc
 	 * @param indent 首行缩进距离
 	 */
 	public void setBlockDefault(int block_type, int font_family,
-			int font_size, int font_style, int alignment, float indent) {
+			int font_size, int font_style, int alignment, float indent,
+			float line_space_before, float line_space_after) {
 		for (PDFBlockDefault block : block_defaults) {
 			if (block.block_type == block_type) {
 				block.font_family = font_family;
@@ -208,6 +209,8 @@ public class PDFDoc
 				block.font_style = font_style;
 				block.alignment = alignment;
 				block.indent = indent;
+				block.line_space_before = line_space_before;
+				block.line_space_after = line_space_after;
 				break;
 			}
 		}
@@ -282,6 +285,25 @@ public class PDFDoc
 		}
 	}
 
+	public void setBlockDefaultLineSpaceBefore(int block_type,
+			float line_space_before) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.line_space_before = line_space_before;
+				break;
+			}
+		}
+	}
+
+	public void setBlockDefaultLineSpaceAfter(int block_type,
+			float line_space_after) {
+		for (PDFBlockDefault block : block_defaults) {
+			if (block.block_type == block_type) {
+				block.line_space_after = line_space_after;
+				break;
+			}
+		}
+	}
 	/**
 	 * 通过字体文件获取 PDF 字体
 	 * @param fname 字体文件名称
@@ -417,7 +439,29 @@ public class PDFDoc
 					float indent = Float.parseFloat(value);
 					para.setFirstLineIndent(indent);
 				} catch (Exception ex) {
-					System.err.println("Index attribute must be a float value");
+					System.err.println("Indent attribute must has a float value");
+				}
+			}
+
+			// 设置段落前空间
+			value = attrs.get("space-before");
+			if (value != null) {
+				try {
+					float space = Float.parseFloat(value);
+					para.setSpacingBefore(space);
+				} catch (Exception ex) {
+					System.err.println("space-before attribute must has a float value");
+				}
+			}
+
+			// 设置段落后空间
+			value = attrs.get("space-after");
+			if (value != null) {
+				try {
+					float space = Float.parseFloat(value);
+					para.setSpacingAfter(space);
+				} catch (Exception ex) {
+					System.err.println("space-after attribute must has a float value");
 				}
 			}
 		}
@@ -436,28 +480,21 @@ public class PDFDoc
 			throws DocumentException, IOException {
 		Paragraph para = new Paragraph();
 
-		para.setAlignment(block_default.alignment);
-		para.setFirstLineIndent(block_default.indent);
-
-		formatParagraph(para, chunk_list);
-
-		int font_size = 0;
 		for(TextChunk text_chunk : chunk_list) {
 			text_chunk.setFontFamily(block_default.font_family);
 			text_chunk.setFontSize(block_default.font_size);
 			text_chunk.addStyle(block_default.font_style);
 
 			Chunk chunk = formatChunk(text_chunk);
-			int size = text_chunk.getFontSize();
-			if (size > font_size)
-				font_size = size;
 			chunk.setSplitCharacter(split_character);
 			para.add(chunk);
 		}
+		para.setSpacingBefore(block_default.line_space_before);
+		para.setSpacingAfter(block_default.line_space_after);
+		para.setAlignment(block_default.alignment);
+		para.setFirstLineIndent(block_default.indent);
 
-		if (block_type != BLOCK_VSPACE)
-			para.setSpacingBefore(font_size / 2);
-
+		formatParagraph(para, chunk_list);
 		document.add(para);
 	}
 
