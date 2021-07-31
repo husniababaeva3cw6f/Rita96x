@@ -518,6 +518,11 @@ public class PDFDoc
 	 */
 	public void writeBlock(String block_name, List<TextChunk> chunk_list)
 			throws DocumentException, IOException {
+		if (block_name == null ||
+				chunk_list == null || chunk_list.size() == 0) {
+			return;
+		}
+
 		int block_type = -1;
 
 		// 将块名称映射到内部的整数表示

@@ -310,15 +310,17 @@ class XMLFileHandler extends DefaultHandler
 			chunk_list.add(chunk.clone());
 		}
 
-		for (String label : block_labels) {
-			if (label.equalsIgnoreCase(qName)) {
-				try {
-					parser.pdfdoc.writeBlock(qName, chunk_list);
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw new SAXException("Write to PDF failed.");
-				} finally {
-					chunk_list.clear();
+		if (chunk_list.size() > 0) {
+			for (String label : block_labels) {
+				if (label.equalsIgnoreCase(qName)) {
+					try {
+						parser.pdfdoc.writeBlock(qName, chunk_list);
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new SAXException("Write to PDF failed.");
+					} finally {
+						chunk_list.clear();
+					}
 				}
 			}
 		}
