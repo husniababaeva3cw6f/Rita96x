@@ -285,6 +285,11 @@ public class PDFDoc
 		}
 	}
 
+	/**
+	 * 设置段前空间
+	 * @param block_type
+	 * @param line_space_before
+	 */
 	public void setBlockDefaultLineSpaceBefore(int block_type,
 			float line_space_before) {
 		for (PDFBlockDefault block : block_defaults) {
@@ -295,6 +300,11 @@ public class PDFDoc
 		}
 	}
 
+	/**
+	 * 设置段后空间
+	 * @param block_type
+	 * @param line_space_after
+	 */
 	public void setBlockDefaultLineSpaceAfter(int block_type,
 			float line_space_after) {
 		for (PDFBlockDefault block : block_defaults) {
@@ -370,9 +380,9 @@ public class PDFDoc
 		// 设置字体族
 		String value = attrs.get("family");
 		if (value != null) {
-			if (value.equals("heiti")) {
+			if (value.equalsIgnoreCase("heiti")) {
 				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_HEI);
-			} else if (value.equals("songti")) {
+			} else if (value.equalsIgnoreCase("songti")) {
 				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
 			} else {
 				System.err.println("Font family '" + value + "' unknown!");
@@ -420,11 +430,11 @@ public class PDFDoc
 			// 设置段落对齐方式
 			String value = attrs.get("align");
 			if (value != null) {
-				if (value.equals("left")) {
+				if (value.equalsIgnoreCase("left")) {
 					para.setAlignment(Element.ALIGN_LEFT);
-				} else if (value.equals("center")) {
+				} else if (value.equalsIgnoreCase("center")) {
 					para.setAlignment(Element.ALIGN_CENTER);
-				} else if (value.equals("right")) {
+				} else if (value.equalsIgnoreCase("right")) {
 					para.setAlignment(Element.ALIGN_RIGHT);
 				} else {
 					System.err.println("Block alignment type '"
@@ -512,7 +522,7 @@ public class PDFDoc
 
 		// 将块名称映射到内部的整数表示
 		for (int i = 0; i < block_types.length; i++) {
-			if (block_name.equals(block_types[i][0])) {
+			if (block_name.equalsIgnoreCase((String) block_types[i][0])) {
 				block_type = (Integer) block_types[i][1];
 				break;
 			}

@@ -208,7 +208,7 @@ class XMLFileHandler extends DefaultHandler
 					throws SAXException {
 		TextChunk prev_chunk = null;
 		
-		if (qName.equals("textpdf")) {
+		if (qName.equalsIgnoreCase("textpdf")) {
 			if (parser.pdfdoc.isOpen()) {
 				throw new SAXException("'textpdf' must be root element.");
 			}
@@ -248,13 +248,13 @@ class XMLFileHandler extends DefaultHandler
 			chunk.setStyle(prev_chunk.getStyle());
 		}
 
-		if (qName.equals("b")) {
+		if (qName.equalsIgnoreCase("b")) {
 			chunk.addStyle(TextChunk.STYLE_BOLD);
-		} else if (qName.equals("u")) {
+		} else if (qName.equalsIgnoreCase("u")) {
 			chunk.addStyle(TextChunk.STYLE_UNDERLINE);
-		} else if (qName.equals("i")) {
+		} else if (qName.equalsIgnoreCase("i")) {
 			chunk.addStyle(TextChunk.STYLE_ITALIC);
-		} else if (qName.equals("value")) {
+		} else if (qName.equalsIgnoreCase("value")) {
 			String id = attrs.getValue("id");
 			if (id == null) {
 				System.err.println("Value element missing 'id' attribute.");
@@ -296,7 +296,7 @@ class XMLFileHandler extends DefaultHandler
 	@Override
 	public void endElement(String namespaceURI,
 			String localName, String qName) throws SAXException {
-		if (qName.equals("textpdf")){
+		if (qName.equalsIgnoreCase("textpdf")){
 			parser.pdfdoc.close();
 			return;
 		}
@@ -311,7 +311,7 @@ class XMLFileHandler extends DefaultHandler
 		}
 
 		for (String label : block_labels) {
-			if (label.equals(qName)) {
+			if (label.equalsIgnoreCase(qName)) {
 				try {
 					parser.pdfdoc.writeBlock(qName, chunk_list);
 				} catch (Exception e) {
