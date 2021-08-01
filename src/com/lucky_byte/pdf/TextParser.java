@@ -274,6 +274,20 @@ class XMLFileHandler extends DefaultHandler
 					}
 				}
 			}
+		} else if (qName.equalsIgnoreCase("hspace")) {
+			String value = attrs.getValue("size");
+			if (value == null || value.length() == 0) {
+				System.err.println("hspace need a size attribute.");
+			} else {
+				try {
+					int size = Integer.parseInt(value);
+					for (int i = 0; i < size; i++) {
+						contents_builder.append(' ');
+					}
+				} catch (Exception ex) {
+					System.err.println("size attribute need a integer value");
+				}
+			}
 		}
 		chunk_stack.push(chunk);
 	}
@@ -301,10 +315,16 @@ class XMLFileHandler extends DefaultHandler
 			return;
 		}
 
+		if (qName.equalsIgnoreCase("pagebreak")) {
+			parser.pdfdoc.newPage();
+			return;
+		}
+
 		TextChunk chunk = chunk_stack.pop();
 
 		String contents = contents_builder.toString();
-		if (contents.length() > 0) {
+		if (contents.length() > 0 || qName.equalsIgnoreCase("value") ||
+				qName.equalsIgnoreCase("hspace")) {
 			chunk.setContents(contents);
 			contents_builder.setLength(0);
 			chunk_list.add(chunk.clone());

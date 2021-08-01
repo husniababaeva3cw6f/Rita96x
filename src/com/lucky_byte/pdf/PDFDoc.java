@@ -416,7 +416,38 @@ public class PDFDoc
 			throws DocumentException, IOException {
 		Chunk chunk = new Chunk();
 
-		chunk.append(text_chunk.getContents());
+		String contents = text_chunk.getContents();
+
+		String value = text_chunk.getAttrs().get("minlen");
+		if (value != null && value.length() > 0) {
+			if (contents.length() == 0) {
+				chunk.setUnderline(1.0f, -4.0f);
+			}
+			try {
+				int minlen = Integer.parseInt(value);
+				int currlen = 0;
+				for (int i = 0; i < contents.length(); i++) {
+					char ch = contents.charAt(i);
+					if (ch < 127) {
+						currlen += 1;
+					} else {
+						currlen += 2;
+					}
+				}
+				if (currlen < minlen) {
+					StringBuilder builder = new StringBuilder(contents);
+					for (; currlen < minlen; currlen++) {
+						builder.append(' ');
+						System.out.println("add a space...");
+					}
+					contents = builder.toString();
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				System.err.println("minlen need a integer value.");
+			}
+		}
+		chunk.append(contents);
 		setChunkFont(text_chunk, chunk);
 		return chunk;
 	}
@@ -522,6 +553,10 @@ public class PDFDoc
 				chunk_list == null || chunk_list.size() == 0) {
 			return;
 		}
+		if (document == null && !document.isOpen()) {
+			System.err.println("Document unopen yet, please open it first.");
+			return;
+		}
 
 		int block_type = -1;
 
@@ -543,6 +578,17 @@ public class PDFDoc
 				break;
 			}
 		}
+	}
+
+	/**
+	 * 换页
+	 */
+	public void newPage() {
+		if (document == null && !document.isOpen()) {
+			System.err.println("Document unopen yet, please open it first.");
+			return;
+		}
+		document.newPage();
 	}
 
 }
