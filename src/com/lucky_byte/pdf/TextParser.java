@@ -231,7 +231,8 @@ class XMLFileHandler extends DefaultHandler
 			prev_chunk = chunk_stack.peek();
 			String contents = contents_builder.toString();
 			if (contents.length() > 0) {
-				prev_chunk.setContents(contents);
+				prev_chunk.setContents(
+						contents.replaceAll("[ \t\f]*\n+[ \t\f]*", ""));
 				contents_builder.setLength(0);
 				chunk_list.add(prev_chunk.clone());
 			}
@@ -325,7 +326,7 @@ class XMLFileHandler extends DefaultHandler
 		String contents = contents_builder.toString();
 		if (contents.length() > 0 || qName.equalsIgnoreCase("value") ||
 				qName.equalsIgnoreCase("hspace")) {
-			chunk.setContents(contents);
+			chunk.setContents(contents.replaceAll("[ \t\f]*\n+[ \t\f]*", ""));
 			contents_builder.setLength(0);
 			chunk_list.add(chunk.clone());
 		}

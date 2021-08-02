@@ -438,7 +438,6 @@ public class PDFDoc
 					StringBuilder builder = new StringBuilder(contents);
 					for (; currlen < minlen; currlen++) {
 						builder.append(' ');
-						System.out.println("add a space...");
 					}
 					contents = builder.toString();
 				}
