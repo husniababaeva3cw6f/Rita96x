@@ -215,7 +215,6 @@ class XMLFileHandler extends DefaultHandler
 
 			// 必须先设置页面属性再打开文档
 			setupPage(attrs);
-
 			if (!parser.pdfdoc.open()) {
 				throw new SAXException("Open document failed.");
 			}
@@ -245,17 +244,7 @@ class XMLFileHandler extends DefaultHandler
 		}
 		chunk.addAttrs(attrs);
 
-		if (prev_chunk != null) {
-			chunk.setStyle(prev_chunk.getStyle());
-		}
-
-		if (qName.equalsIgnoreCase("b")) {
-			chunk.addStyle(TextChunk.STYLE_BOLD);
-		} else if (qName.equalsIgnoreCase("u")) {
-			chunk.addStyle(TextChunk.STYLE_UNDERLINE);
-		} else if (qName.equalsIgnoreCase("i")) {
-			chunk.addStyle(TextChunk.STYLE_ITALIC);
-		} else if (qName.equalsIgnoreCase("value")) {
+		if (qName.equalsIgnoreCase("value")) {
 			String id = attrs.getValue("id");
 			if (id == null) {
 				System.err.println("Value element missing 'id' attribute.");
@@ -270,8 +259,9 @@ class XMLFileHandler extends DefaultHandler
 								+ "' must has a string value.");
 					} else {
 						contents_builder.append(value);
-						chunk.addStyle(TextChunk.STYLE_BOLD);
-						chunk.addStyle(TextChunk.STYLE_UNDERLINE);
+						if (attrs.getValue("font-style") == null) {
+							chunk.addAttr("font-style", "bold,underline");
+						}
 					}
 				}
 			}

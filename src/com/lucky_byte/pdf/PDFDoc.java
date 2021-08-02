@@ -82,6 +82,13 @@ public class PDFDoc
 	public final static int BLOCK_SECTION = 2;
 	public final static int BLOCK_PARA = 3;
 
+	public final static int FONT_FAMILY_HEI = 1;
+	public final static int FONT_FAMILY_SONG = 2;
+
+	public static final int FONT_STYLE_BOLD = 1;
+	public static final int FONT_STYLE_UNDERLINE = 2;
+	public static final int FONT_STYLE_ITALIC = 4;
+
 	private Object[][] block_types = {
 			{ "title", BLOCK_TITLE },
 			{ "section", BLOCK_SECTION },
@@ -121,13 +128,13 @@ public class PDFDoc
 
 		// 默认的块属性，应用程序可以通过 setBlockDefault() 来修改这些属性
 		block_defaults.add(new PDFBlockDefault(BLOCK_TITLE,
-				TextChunk.FONT_FAMILY_HEI, 18, TextChunk.STYLE_BOLD,
+				FONT_FAMILY_HEI, 18, FONT_STYLE_BOLD,
 				Element.ALIGN_CENTER, 0.0f, 0.0f, 16.0f));
 		block_defaults.add(new PDFBlockDefault(BLOCK_SECTION,
-				TextChunk.FONT_FAMILY_SONG, 16, TextChunk.STYLE_BOLD,
+				FONT_FAMILY_SONG, 16, FONT_STYLE_BOLD,
 				Element.ALIGN_LEFT, 0.0f, 13.0f, 0.0f));
 		block_defaults.add(new PDFBlockDefault(BLOCK_PARA,
-				TextChunk.FONT_FAMILY_SONG, 12, 0,
+				FONT_FAMILY_SONG, 12, 0,
 				Element.ALIGN_LEFT, 22.0f, 6.0f, 0.0f));
 	}
 
@@ -314,106 +321,87 @@ public class PDFDoc
 			}
 		}
 	}
-	/**
-	 * 通过字体文件获取 PDF 字体
-	 * @param fname 字体文件名称
-	 * @param style 字体样式
-	 * @param size 字体大小
-	 * @return
-	 * @throws DocumentException
-	 * @throws IOException
-	 */
-	private Font getFontFromFile(String fname, int style, int size)
-			throws DocumentException, IOException {
-		int font_style = 0;
-
-		// 设置字体样式
-		if ((style & TextChunk.STYLE_BOLD) != 0) {
-			font_style |= Font.BOLD;
-		}
-		if ((style & TextChunk.STYLE_ITALIC) != 0) {
-			font_style |= Font.ITALIC;
-		}
-		if ((style & TextChunk.STYLE_UNDERLINE) != 0) {
-			font_style |= Font.UNDERLINE;
-		}
-
-		BaseFont base_font = BaseFont.createFont(fname,
-				BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-
-		return new Font(base_font, size, font_style);
-	}
-
-	/**
-	 * 根据字体族获取字体
-	 * @param family 字体族
-	 * @param style 字体风格
-	 * @param size 字体大小
-	 * @return
-	 * @throws DocumentException
-	 * @throws IOException
-	 */
-	private Font getFont(int family, int style, int size)
-			throws DocumentException, IOException {
-		switch (family) {
-		case TextChunk.FONT_FAMILY_HEI:
-			return getFontFromFile("resources/SIMHEI.TTF", style, size);
-		case TextChunk.FONT_FAMILY_SONG:
-			return getFontFromFile("resources/SIMSUN.TTC,0", style, size);
-		default:
-			return null;
-		}
-	}
 
 	/**
 	 * 根据 TextChunk 中字体相关的属性来设置 Chunk 的字体，字体包括：
 	 * 家族(黑体或宋体)、大小、修饰(粗体、斜体、下划线等等)。
 	 * @param text_chunk TextChunk 对象，保存了字体的属性
 	 * @param chunk PDF Chunk 对象
+	 * @param block_default 
 	 * @throws DocumentException
 	 * @throws IOException
 	 */
-	private void setChunkFont(TextChunk text_chunk, Chunk chunk)
-			throws DocumentException, IOException {
+	private void setChunkFont(TextChunk text_chunk, Chunk chunk,
+			PDFBlockDefault block_default)
+					throws DocumentException, IOException {
 		Map<String, String> attrs = text_chunk.getAttrs();
 
-		// 设置字体族
-		String value = attrs.get("family");
+		int font_family = block_default.font_family;
+		int font_size = block_default.font_size;
+		int font_style = block_default.font_style;
+		BaseFont base_font = null;
+
+		String value = attrs.get("font-family");
 		if (value != null) {
-			if (value.equalsIgnoreCase("heiti")) {
-				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_HEI);
-			} else if (value.equalsIgnoreCase("songti")) {
-				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
+			if (value.equalsIgnoreCase("heiti") ||
+					value.equalsIgnoreCase("hei")) {
+				font_family = FONT_FAMILY_HEI;
+			} else if (value.equalsIgnoreCase("songti") ||
+					value.equalsIgnoreCase("song")) {
+				font_family = FONT_FAMILY_SONG;
 			} else {
 				System.err.println("Font family '" + value + "' unknown!");
-				text_chunk.setFontFamily(TextChunk.FONT_FAMILY_SONG);
 			}
 		}
 
-		// 设置字体大小
-		value = attrs.get("size");
+		value = attrs.get("font-size");
 		if (value != null) {
 			try {
-				text_chunk.setFontSize(Integer.parseInt(value));
+				font_size = Integer.parseInt(value);
 			} catch (Exception ex) {
 				System.err.println("Font size '" + value + "' invalid.");
-				text_chunk.setFontSize(12);
 			}
 		}
 
-		chunk.setFont(getFont(text_chunk.getFontFamily(),
-				text_chunk.getStyle(), text_chunk.getFontSize()));
+		value = attrs.get("font-style");
+		if (value != null) {
+			font_style = 0;
+			String[] styles = value.split(",");
+			for (int i = 0; i < styles.length; i++) {
+				if (styles[i].equalsIgnoreCase("bold")) {
+					font_style |= Font.BOLD;
+				} else if (styles[i].equalsIgnoreCase("italic")) {
+					font_style |= Font.ITALIC;
+				} else if (styles[i].equalsIgnoreCase("underline")) {
+					font_style |= Font.UNDERLINE;
+				}
+			}
+		}
+
+		switch (font_family) {
+		case FONT_FAMILY_HEI:
+			base_font = BaseFont.createFont("resources/SIMHEI.TTF",
+					BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+			break;
+		case FONT_FAMILY_SONG:
+			base_font = BaseFont.createFont("resources/SIMSUN.TTC,0",
+					BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+			break;
+		}
+		chunk.setFont(new Font(base_font, font_size, font_style));
 	}
 
 	/**
 	 * 根据 TextChunk 的属性生成 PDF Chunk 对象
 	 * @param text_chunk TextChunk 对象
+	 * @param block_default 
 	 * @return
 	 * @throws DocumentException
 	 * @throws IOException
 	 */
-	private Chunk formatChunk(TextChunk text_chunk)
-			throws DocumentException, IOException {
+	private Chunk formatChunk(TextChunk text_chunk,
+			PDFBlockDefault block_default)
+					throws DocumentException, IOException {
 		Chunk chunk = new Chunk();
 
 		String contents = text_chunk.getContents();
@@ -447,7 +435,7 @@ public class PDFDoc
 			}
 		}
 		chunk.append(contents);
-		setChunkFont(text_chunk, chunk);
+		setChunkFont(text_chunk, chunk, block_default);
 		return chunk;
 	}
 
@@ -479,7 +467,8 @@ public class PDFDoc
 					float indent = Float.parseFloat(value);
 					para.setFirstLineIndent(indent);
 				} catch (Exception ex) {
-					System.err.println("Indent attribute must has a float value");
+					System.err.println(
+							"Indent attribute must has a float value");
 				}
 			}
 
@@ -490,7 +479,8 @@ public class PDFDoc
 					float space = Float.parseFloat(value);
 					para.setSpacingBefore(space);
 				} catch (Exception ex) {
-					System.err.println("space-before attribute must has a float value");
+					System.err.println(
+							"space-before attribute must has a float value");
 				}
 			}
 
@@ -501,7 +491,8 @@ public class PDFDoc
 					float space = Float.parseFloat(value);
 					para.setSpacingAfter(space);
 				} catch (Exception ex) {
-					System.err.println("space-after attribute must has a float value");
+					System.err.println(
+							"space-after attribute must has a float value");
 				}
 			}
 		}
@@ -521,11 +512,7 @@ public class PDFDoc
 		Paragraph para = new Paragraph();
 
 		for(TextChunk text_chunk : chunk_list) {
-			text_chunk.setFontFamily(block_default.font_family);
-			text_chunk.setFontSize(block_default.font_size);
-			text_chunk.addStyle(block_default.font_style);
-
-			Chunk chunk = formatChunk(text_chunk);
+			Chunk chunk = formatChunk(text_chunk, block_default);
 			chunk.setSplitCharacter(split_character);
 			para.add(chunk);
 		}
