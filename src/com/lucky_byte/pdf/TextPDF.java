@@ -53,7 +53,7 @@ public class TextPDF
 	 * @throws ParserConfigurationException 
 	 * @throws ParseException 
 	 */
-	static void gen(File xmlfile, File jsonfile, File pdffile)
+	static public void gen(File xmlfile, File jsonfile, File pdffile)
 			throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
 		if (xmlfile == null || jsonfile == null || pdffile == null) {
@@ -76,7 +76,7 @@ public class TextPDF
 	 * @throws ParserConfigurationException 
 	 * @throws ParseException 
 	 */
-	static void gen(String xmlstr, String jsonstr, File pdffile)
+	static public void gen(String xmlstr, String jsonstr, File pdffile)
 			throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
 		if (xmlstr == null || jsonstr == null || pdffile == null) {

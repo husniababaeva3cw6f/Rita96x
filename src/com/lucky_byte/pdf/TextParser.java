@@ -226,6 +226,14 @@ class XMLFileHandler extends DefaultHandler
 					+ "check your xml root element is 'textpdf'");
 		}
 
+		// Block 元素不可嵌套
+		for (String label : block_labels) {
+			if (label.equalsIgnoreCase(qName)) {
+				chunk_list.clear();
+				break;
+			}
+		}
+
 		try{
 			prev_chunk = chunk_stack.peek();
 			String contents = contents_builder.toString();
@@ -321,8 +329,14 @@ class XMLFileHandler extends DefaultHandler
 			chunk_list.add(chunk.clone());
 		}
 
-		if (chunk_list.size() > 0) {
-			for (String label : block_labels) {
+		for (String label : block_labels) {
+			// 空段落
+			if (chunk_list.size() == 0 && label.equalsIgnoreCase("para")) {
+				chunk.setContents(" ");
+				chunk_list.add(chunk.clone());
+			}
+
+			if (chunk_list.size() > 0) {
 				if (label.equalsIgnoreCase(qName)) {
 					try {
 						parser.pdfdoc.writeBlock(qName, chunk_list);
@@ -332,6 +346,7 @@ class XMLFileHandler extends DefaultHandler
 					} finally {
 						chunk_list.clear();
 					}
+					break;
 				}
 			}
 		}

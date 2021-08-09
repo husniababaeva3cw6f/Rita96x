@@ -110,14 +110,7 @@ public class PDFDoc
 		@Override
 		public boolean isSplitCharacter(int start, int current,
 				int end, char[] cc, PdfChunk[] chunk) {
-			char c;
-			if (chunk == null) {
-				c = cc[current];
-			} else {
-				int posi = Math.min(current, chunk.length - 1);
-				c = (char) chunk[posi].getUnicodeEquivalent(cc[current]);
-			}
-			return (c < ' ');
+			return true;
 		}
 	};
 
