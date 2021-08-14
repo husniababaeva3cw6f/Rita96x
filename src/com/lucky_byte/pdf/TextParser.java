@@ -141,29 +141,20 @@ class XMLFileHandler extends DefaultHandler
 	public void endDocument() throws SAXException {
 	}
 
+	// 页面大小常数定义
 	private Object[][] page_size_map = {
-			{ "a0", PageSize.A0 },
-			{ "a1", PageSize.A1 },
-			{ "a2", PageSize.A2 },
-			{ "a3", PageSize.A3 },
-			{ "a4", PageSize.A4 },
-			{ "a5", PageSize.A5 },
-			{ "a6", PageSize.A6 },
-			{ "a7", PageSize.A7 },
-			{ "a8", PageSize.A8 },
-			{ "a9", PageSize.A9 },
+			{ "a0", PageSize.A0 }, { "a1", PageSize.A1 },
+			{ "a2", PageSize.A2 }, { "a3", PageSize.A3 },
+			{ "a4", PageSize.A4 }, { "a5", PageSize.A5 },
+			{ "a6", PageSize.A6 }, { "a7", PageSize.A7 },
+			{ "a8", PageSize.A8 }, { "a9", PageSize.A9 },
 			{ "a10", PageSize.A10 },
 
-			{ "b0", PageSize.B0 },
-			{ "b1", PageSize.B1 },
-			{ "b2", PageSize.B2 },
-			{ "b3", PageSize.B3 },
-			{ "b4", PageSize.B4 },
-			{ "b5", PageSize.B5 },
-			{ "b6", PageSize.B6 },
-			{ "b7", PageSize.B7 },
-			{ "b8", PageSize.B8 },
-			{ "b9", PageSize.B9 },
+			{ "b0", PageSize.B0 }, { "b1", PageSize.B1 },
+			{ "b2", PageSize.B2 }, { "b3", PageSize.B3 },
+			{ "b4", PageSize.B4 }, { "b5", PageSize.B5 },
+			{ "b6", PageSize.B6 }, { "b7", PageSize.B7 },
+			{ "b8", PageSize.B8 }, { "b9", PageSize.B9 },
 			{ "b10", PageSize.B10 },
 	};
 
@@ -297,8 +288,6 @@ class XMLFileHandler extends DefaultHandler
 	@Override
 	public void characters(char[] ch, int start, int length)
 			throws SAXException {
-		super.characters(ch, start, length);
-
 		String contents = new String(ch, start, length);
 		contents_builder.append(contents.trim());
 	}
@@ -330,7 +319,7 @@ class XMLFileHandler extends DefaultHandler
 		}
 
 		for (String label : block_labels) {
-			// 空段落
+			// 空段落，需要增加一个空 TextChunk 对象去模拟空段落
 			if (chunk_list.size() == 0 && label.equalsIgnoreCase("para")) {
 				chunk.setContents(" ");
 				chunk_list.add(chunk.clone());
