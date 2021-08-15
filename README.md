@@ -14,7 +14,20 @@
 
 上面`<value id="json_key" />`部分会从 JSON 数据源中通过 `json_key` 获取数据填入其中，其它部分为固定内容。
 
-TextPDF 的模板只支持简单的排版格式（[查看示例](wiki/example)）。
+TextPDF 的 XML 模板侧重于描述排版效果，例如'字体大小'，'粗体'，'斜体'，'段落缩进'，'段前段后空间'，等等。以便能生成满意的 PDF 文档。模板中唯一动态的内容是`<value id="some">`标签，其会被 JSON 中的同名 key 值替换掉，下面是一个更加丰富的模板示例:
+
+```xml
+<!-- 模板根标签必须是 textpdf -->
+<textpdf>
+    <title>这是一段标题，它的默认格式和普通段落不一样，字体要大一些，并且居中显示</title>
+    <title font-size="12">可以直接指定标题的字体大小来改变默认值</title>
+    <section>这是一个比标题略小，左对齐的段落</section>
+    <para>普通段落</para>
+    <para font-family="heiti" font-size="11" font-style="bold,underline,italic" align="right" indent="22" space-before="12" space-after="20">这个段落定义了许多格式</para>
+    <para>可以通过<span font-style="bold">span元素来嵌套文字风格，</span>这样可以在一个段落中出现多种风格。</para>
+</textpdf>
+```
+TextPDF 的模板只支持简单的排版格式（[查看更多示例](wiki/example)）。
 
 ### 转换 .doc 文件
 
@@ -35,7 +48,7 @@ TextPDF 可以将`.doc`文件转换成 TextPDF 的 XML 模板文件，对于`.do
 
 通常的情况是用户根据 XML 模板来录入那些需要填充的字段，并保存到数据库或文件中，后续再通过程序来合成 PDF。
 
-### HTML 编辑
+## HTML 编辑
 
 在实际应用中，用户需要从某个地方输入 XML 模板中的录入域(`<value>`)，为此，TextPDF 可以将 XML 模板转换为 HTML 文件，所有的`<value>`标签会转换为 HTML 的输入框，用户只能录入这些输入框的数据。
 
