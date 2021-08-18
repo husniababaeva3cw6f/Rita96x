@@ -27,7 +27,7 @@ TextPDF 的 XML 模板侧重于描述排版效果，例如'字体大小'，'粗�
     <para>可以通过<span font-style="bold">span元素来嵌套文字风格，</span>这样可以在一个段落中出现多种风格。</para>
 </textpdf>
 ```
-TextPDF 的模板只支持简单的排版格式（[查看更多示例](wiki/example)）。
+TextPDF 的模板只支持简单的排版格式（[查看模板说明](http://git.oschina.net/lucky-byte/textpdf/wikis/Template)）。
 
 ### 转换 .doc 文件
 
