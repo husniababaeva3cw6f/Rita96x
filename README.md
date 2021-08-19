@@ -40,7 +40,7 @@ TextPDF 可以将`.doc`文件转换成 TextPDF 的 XML 模板文件，对于`.do
 ```json
 {
     "key1": "value1",
-    "key2": "value2",
+    "key2": "value2"
 }
 ```
 
