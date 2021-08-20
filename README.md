@@ -9,7 +9,9 @@
 模板提供文档的固定内容，然后留出数据混入的标记，下面是一个简单的例子：
 
 ```xml
-<p>这是固定内容，<value id="json_key" />继续固定内容。</p>
+<textpdf>
+  <para>这是固定内容，<value id="json_key" />继续固定内容。</para>
+</textpdf>
 ```
 
 上面`<value id="json_key" />`部分会从 JSON 数据源中通过 `json_key` 获取数据填入其中，其它部分为固定内容。
