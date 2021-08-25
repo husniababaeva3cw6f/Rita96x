@@ -302,9 +302,12 @@ class XMLFileHandler extends DefaultHandler
 			parser.pdfdoc.close();
 			return;
 		}
-
 		if (qName.equalsIgnoreCase("pagebreak")) {
 			parser.pdfdoc.newPage();
+			return;
+		}
+		if (qName.equalsIgnoreCase("break")) {
+			contents_builder.append("\n");
 			return;
 		}
 
