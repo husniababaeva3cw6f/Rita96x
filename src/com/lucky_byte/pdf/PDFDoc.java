@@ -361,11 +361,12 @@ public class PDFDoc
 			font_style = 0;
 			String[] styles = value.split(",");
 			for (int i = 0; i < styles.length; i++) {
-				if (styles[i].equalsIgnoreCase("bold")) {
+				String label = styles[i].trim();
+				if (label.equalsIgnoreCase("bold")) {
 					font_style |= Font.BOLD;
-				} else if (styles[i].equalsIgnoreCase("italic")) {
+				} else if (label.equalsIgnoreCase("italic")) {
 					font_style |= Font.ITALIC;
-				} else if (styles[i].equalsIgnoreCase("underline")) {
+				} else if (label.equalsIgnoreCase("underline")) {
 					font_style |= Font.UNDERLINE;
 				}
 			}

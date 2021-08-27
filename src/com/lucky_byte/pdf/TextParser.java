@@ -179,10 +179,10 @@ class XMLFileHandler extends DefaultHandler
 			} else {
 				try {
 					parser.pdfdoc.setPageMargin(
-							Integer.parseInt(array[0]),
-							Integer.parseInt(array[1]),
-							Integer.parseInt(array[2]),
-							Integer.parseInt(array[3]));
+							Integer.parseInt(array[0].trim()),
+							Integer.parseInt(array[1].trim()),
+							Integer.parseInt(array[2].trim()),
+							Integer.parseInt(array[3].trim()));
 				} catch (Exception ex) {
 					System.err.println("Page margin format error.");
 				}
