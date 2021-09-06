@@ -152,7 +152,7 @@ public class DocReader
 					builder.append("\"");
 					appendRunAttrs(builder, run, false);
 					builder.append(" />\n");
-				} else {
+				} else if (text.length() > 0) {
 //					System.out.println(">>> is NOT a value");
 //					if (i == 33) {
 //						for (int k = 0; k < text.length(); k++) {
