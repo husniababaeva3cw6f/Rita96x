@@ -102,6 +102,7 @@ class XMLFileHandler extends DefaultHandler
 	private Stack<TextChunk> chunk_stack;
 	private StringBuilder contents_builder;
 	private JSONObject json_object;
+	private JSONObject json_data;
 	
 	private String[] block_labels = {
 			"title", "section", "para",
@@ -128,6 +129,17 @@ class XMLFileHandler extends DefaultHandler
 			JSONParser json_parser = new JSONParser();
 			json_object = (JSONObject) json_parser.parse(
 					new BufferedReader(reader));
+			if (!json_object.containsKey("data")) {
+				System.err.println(
+						"JSON source missing 'data' key, please check!");
+			} else {
+				Object value = json_object.get("data");
+				if (!(value instanceof JSONObject)) {
+					System.err.println("JSON 'data' must be a object.");
+				} else {
+					json_data = (JSONObject) value;
+				}
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			throw new SAXException("Failed to parse JSON stream");
@@ -248,18 +260,20 @@ class XMLFileHandler extends DefaultHandler
 			if (id == null) {
 				System.err.println("Value element missing 'id' attribute.");
 			} else {
-				if (!json_object.containsKey(id)) {
-					System.err.println("JSON data missing key '" + id
-							+ "', please check!");
-				} else {
-					Object value = json_object.get(id);
-					if (!(value instanceof String)) {
-						System.err.println("JSON key '" + id
-								+ "' must has a string value.");
+				if (json_data != null) {
+					if (!json_data.containsKey(id)) {
+						System.err.println("JSON data key '" + id
+								+ "' not found!");
 					} else {
-						contents_builder.append(value);
-						if (attrs.getValue("font-style") == null) {
-							chunk.addAttr("font-style", "bold,underline");
+						Object value = json_data.get(id);
+						if (!(value instanceof String)) {
+							System.err.println("JSON  data key '" + id
+									+ "' must has a string value.");
+						} else {
+							contents_builder.append(value);
+							if (attrs.getValue("font-style") == null) {
+								chunk.addAttr("font-style", "bold,underline");
+							}
 						}
 					}
 				}
