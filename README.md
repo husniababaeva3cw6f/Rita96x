@@ -37,12 +37,17 @@ TextPDF 可以将`.doc`文件转换成 TextPDF 的 XML 模板文件，对于`.do
 
 ## JSON 数据
 
-模板的数据源以 JSON 格式提供，这是一个简单的 Hash 对，没有嵌套，例如：
+模板的数据源以 JSON 格式提供，格式非常简单，所有模板数据放在`data`对象中，其它不限，例如：
 
 ```json
 {
-    "key1": "value1",
-    "key2": "value2"
+    "data" : {
+        "key1": "value1",
+        "key2": "value2"
+    },
+
+    "your" : "Some",
+    "meta" : "Other"
 }
 ```
 
