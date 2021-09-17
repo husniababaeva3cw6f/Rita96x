@@ -25,7 +25,8 @@ TextPDF 的 XML 模板侧重于描述排版效果，例如'字体大小'，'粗�
     <title font-size="12">可以直接指定标题的字体大小来改变默认值</title>
     <section>这是一个比标题略小，左对齐的段落</section>
     <para>普通段落</para>
-    <para font-family="heiti" font-size="11" font-style="bold,underline,italic" align="right" indent="22" space-before="12" space-after="20">这个段落定义了许多格式</para>
+    <para font-family="heiti" font-size="11" font-style="bold,underline,italic"
+          align="right" indent="22" space-before="12" space-after="20">这个段落定义了许多格式</para>
     <para>可以通过<span font-style="bold">span元素来嵌套文字风格，</span>这样可以在一个段落中出现多种风格。</para>
 </textpdf>
 ```
