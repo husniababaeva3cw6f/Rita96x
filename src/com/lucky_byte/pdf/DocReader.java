@@ -38,13 +38,55 @@ import org.apache.poi.hwpf.usermodel.Range;
 public class DocReader
 {
 	private URL xsl_url = null;
+	private boolean auto_title = false;
 
+	/**
+	 * 如果指定，将在文件中增加 XSL 风格页的引用
+	 * @param url XSL stylesheet URL
+	 */
 	public void setXSLUrl(URL url) {
 		this.xsl_url = url;
 	}
 
-	private void appendParaAttrs(StringBuilder builder,
-			Paragraph para) {
+	/**
+	 * 自动识别标题行，默认关闭，可以通过这个函数开启
+	 * @param auto_title 是/否
+	 */
+	public void setAutoTitle(boolean auto_title) {
+		this.auto_title = auto_title;
+	}
+
+	private int getTitleIndex(Range range) {
+		int index = 0;
+		int max_font_size = 0;
+		boolean center = false;
+
+		int n_paras = Math.min(3, range.numParagraphs());
+		for (int i = 0; i < n_paras; i++) {
+			Paragraph para = range.getParagraph(i);
+
+			// 找到这一段中最大的字体
+			int font_size = 0;
+			for (int j = 0; j < para.numCharacterRuns(); j++) {
+				CharacterRun run = para.getCharacterRun(j);
+				font_size = Math.max(font_size, run.getFontSize());
+			}
+
+			// 如果字体比之前的都大，则认为是标题
+			if (font_size > max_font_size) {
+				index = i;
+				max_font_size = font_size;
+			} else if (font_size == max_font_size) {
+				if (!center && para.getJustification() == 1) {
+					index = i;
+					center = true;
+				}
+			}
+		}
+		return index;
+	}
+
+	private void appendParaAttrs(StringBuilder builder, Paragraph para) {
 		switch(para.getJustification()) {
 		case 1:
 			builder.append(" align=\"center\"");
@@ -83,6 +125,12 @@ public class DocReader
 		builder.append("\"");
 	}
 
+	/**
+	 * 转换 .doc 文件
+	 * @param doc_stream .doc 数据流
+	 * @param xml_stream .xml 输出流，用于保存转换后结果
+	 * @throws IOException
+	 */
 	public void read(InputStream doc_stream, OutputStream xml_stream)
 			throws IOException {
 		if (doc_stream == null || xml_stream == null) {
@@ -105,6 +153,11 @@ public class DocReader
 		xml_stream.write(builder.toString().getBytes("UTF-8"));
 		builder.setLength(0);
 
+		int title_index = 0;
+		if (auto_title) {
+			title_index = getTitleIndex(range);
+		}
+
 		for (int i = 0; i < range.numParagraphs(); i++) {
 			Paragraph para = range.getParagraph(i);
 
@@ -112,7 +165,11 @@ public class DocReader
 				builder.append("  <pagebreak />\n");
 			}
 
-			builder.append("  <para");
+			if (auto_title && i == title_index) {
+				builder.append("  <title");
+			} else {
+				builder.append("  <para");
+			}
 			appendParaAttrs(builder, para);
 			builder.append(">\n");
 
@@ -166,7 +223,11 @@ public class DocReader
 					builder.append("</span>\n");
 				}
 			}
-			builder.append("  </para>\n");
+			if (auto_title && i == title_index) {
+				builder.append("  </title>\n");
+			} else {
+				builder.append("  </para>\n");
+			}
 			xml_stream.write(builder.toString().getBytes("UTF-8"));
 			builder.setLength(0);
 		}
