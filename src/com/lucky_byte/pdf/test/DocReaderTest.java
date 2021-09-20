@@ -21,8 +21,7 @@ public class DocReaderTest
 					new FileOutputStream("tests/test.xml");
 			
 			DocReader reader = new DocReader();
-			reader.setXSLUrl(new URL(new URL("file:"),
-					"../src/xsl/textpdf.xsl"));
+			reader.setXSLUrl(new URL(new URL("file:"), "textpdf.xsl"));
 			reader.setAutoTitle(true);
 			reader.read(doc_stream, xml_stream);
 

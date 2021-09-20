@@ -23,7 +23,6 @@
 package com.lucky_byte.pdf;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -54,22 +53,24 @@ import com.itextpdf.text.Rectangle;
  * 
  * 这个类负责解析 XML 模板，并组合 JSON 数据，然后调用 PDFDoc
  * 类提供的功能生成 PDF 文件。
+ * 
+ * 版本 0.2 增加生成 HTML 的能力，主要的原因是 XSL 用起来太恼火
  */
 public class TextParser
 {
 	InputStream xml_stream;
 	InputStream json_stream;
-	OutputStream pdf_stream;
-	PDFDoc pdfdoc;
+	OutputStream out_stream;
 
-	public TextParser(InputStream xml_stream,
-			InputStream json_stream, OutputStream pdf_stream)
-					throws FileNotFoundException {
-		this.xml_stream = xml_stream;
-		this.json_stream = json_stream;
-		this.pdf_stream = pdf_stream;
+	public TextParser() {
+	}
 
-		pdfdoc = new PDFDoc(pdf_stream);
+	private void parse(InputStream xml_stream, DefaultHandler handler)
+			throws ParserConfigurationException, SAXException, IOException {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(false);
+		SAXParser parser = factory.newSAXParser();
+		parser.parse(xml_stream, handler);
 	}
 
 	/**
@@ -80,13 +81,34 @@ public class TextParser
 	 * @throws DocumentException 
 	 * @throws ParseException 
 	 */
-	public void parse() throws ParserConfigurationException,
-			SAXException, IOException, ParseException {
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(false);
-		SAXParser parser = factory.newSAXParser();
-		XMLFileHandler handler = new XMLFileHandler(this);
-		parser.parse(xml_stream, handler);
+	public void genPDF(InputStream xml_stream,
+			InputStream json_stream, OutputStream pdf_stream)
+				throws ParserConfigurationException,
+					SAXException, IOException, ParseException {
+		this.xml_stream = xml_stream;
+		this.json_stream = json_stream;
+		this.out_stream = pdf_stream;
+
+		parse(xml_stream, new TextPDFHandler(this));
+	}
+
+	/**
+	 * 解析 XML 模板并生成 HTML 文档
+	 * @param xml_stream
+	 * @param html_stream
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	public void genHTML(InputStream xml_stream,
+			InputStream json_stream, OutputStream html_stream)
+				throws ParserConfigurationException,
+					SAXException, IOException {
+		this.xml_stream = xml_stream;
+		this.json_stream = json_stream;
+		this.out_stream = html_stream;
+
+		parse(xml_stream, new TextHTMLHandler(this));
 	}
 }
 
@@ -95,9 +117,10 @@ public class TextParser
  * 解析 XML 模板，并生成 PDF 文件
  *
  */
-class XMLFileHandler extends DefaultHandler
+class TextPDFHandler extends DefaultHandler
 {
 	private TextParser parser;
+	private PDFDoc pdfdoc;
 	private List<TextChunk> chunk_list;
 	private Stack<TextChunk> chunk_stack;
 	private StringBuilder contents_builder;
@@ -108,13 +131,14 @@ class XMLFileHandler extends DefaultHandler
 			"title", "section", "para",
 	};
 
-	public XMLFileHandler(TextParser parser)
+	public TextPDFHandler(TextParser parser)
 			throws IOException, ParseException {
 		chunk_list = new ArrayList<TextChunk>();
 		chunk_stack = new Stack<TextChunk>();
 		contents_builder = new StringBuilder();
 
 		this.parser = parser;
+		this.pdfdoc = new PDFDoc(parser.out_stream);
 	}
 
 	/**
@@ -176,7 +200,7 @@ class XMLFileHandler extends DefaultHandler
 		if (value != null) {
 			for (Object[] item : page_size_map) {
 				if (value.equalsIgnoreCase((String) item[0])) {
-					parser.pdfdoc.setPageSize((Rectangle) item[1]);
+					pdfdoc.setPageSize((Rectangle) item[1]);
 					break;
 				}
 			}
@@ -190,7 +214,7 @@ class XMLFileHandler extends DefaultHandler
 				System.err.println("Page margin format error.");
 			} else {
 				try {
-					parser.pdfdoc.setPageMargin(
+					pdfdoc.setPageMargin(
 							Integer.parseInt(array[0].trim()),
 							Integer.parseInt(array[1].trim()),
 							Integer.parseInt(array[2].trim()),
@@ -212,19 +236,19 @@ class XMLFileHandler extends DefaultHandler
 		TextChunk prev_chunk = null;
 		
 		if (qName.equalsIgnoreCase("textpdf")) {
-			if (parser.pdfdoc.isOpen()) {
+			if (pdfdoc.isOpen()) {
 				throw new SAXException("'textpdf' must be root element.");
 			}
 
 			// 必须先设置页面属性再打开文档
 			setupPage(attrs);
-			if (!parser.pdfdoc.open()) {
+			if (!pdfdoc.open()) {
 				throw new SAXException("Open document failed.");
 			}
 			return;
 		}
 
-		if (!parser.pdfdoc.isOpen()) {
+		if (!pdfdoc.isOpen()) {
 			throw new SAXException("Document unopen yet. "
 					+ "check your xml root element is 'textpdf'");
 		}
@@ -313,11 +337,11 @@ class XMLFileHandler extends DefaultHandler
 	public void endElement(String namespaceURI,
 			String localName, String qName) throws SAXException {
 		if (qName.equalsIgnoreCase("textpdf")){
-			parser.pdfdoc.close();
+			pdfdoc.close();
 			return;
 		}
 		if (qName.equalsIgnoreCase("pagebreak")) {
-			parser.pdfdoc.newPage();
+			pdfdoc.newPage();
 			return;
 		}
 		if (qName.equalsIgnoreCase("break")) {
@@ -345,7 +369,7 @@ class XMLFileHandler extends DefaultHandler
 			if (chunk_list.size() > 0) {
 				if (label.equalsIgnoreCase(qName)) {
 					try {
-						parser.pdfdoc.writeBlock(qName, chunk_list);
+						pdfdoc.writeBlock(qName, chunk_list);
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw new SAXException("Write to PDF failed.");

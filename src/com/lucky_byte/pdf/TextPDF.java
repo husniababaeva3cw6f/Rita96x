@@ -59,11 +59,10 @@ public class TextPDF
 		if (xmlfile == null || jsonfile == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
-		TextParser parser =
-			new TextParser(new FileInputStream(xmlfile),
+		TextParser parser = new TextParser();
+		parser.genPDF(new FileInputStream(xmlfile),
 				new FileInputStream(jsonfile),
 				new FileOutputStream(pdffile));
-		parser.parse();
 	}
 
 	/**
@@ -84,11 +83,10 @@ public class TextPDF
 		}
 		byte[] xml_bytes = xmlstr.getBytes(StandardCharsets.UTF_8);
 		byte[] json_bytes = jsonstr.getBytes(StandardCharsets.UTF_8);
-		TextParser parser =
-			new TextParser(new ByteArrayInputStream(xml_bytes),
+		TextParser parser = new TextParser();
+		parser.genPDF(new ByteArrayInputStream(xml_bytes),
 				new ByteArrayInputStream(json_bytes),
 				new FileOutputStream(pdffile));
-		parser.parse();
 	}
 
 	/**

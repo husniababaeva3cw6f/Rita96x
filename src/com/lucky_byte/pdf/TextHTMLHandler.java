@@ -22,14 +22,58 @@
  */
 package com.lucky_byte.pdf;
 
-/**
- * 定义项目的版本
- */
-public class Version
-{
-	final public static int MAJOR = 0;
-	final public static int MINOR = 2;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
-	final public static String VERSION =
-			String.format("%d.%d", MAJOR, MINOR);
+public class TextHTMLHandler extends DefaultHandler
+{
+	private TextParser parser;
+
+	public TextHTMLHandler(TextParser parser) {
+		this.parser = parser;
+	}
+
+	/**
+	 * 文档开始解析时回调
+	 */
+	@Override
+	public void startDocument() throws SAXException {
+		
+	}
+
+	/**
+	 * 文档解析结束时回调
+	 */
+	@Override
+	public void endDocument() throws SAXException {
+	}
+
+	/**
+	 * 元素开始时回调
+	 */
+	@Override
+	public void startElement(String namespaceURI,
+			String localName, String qName, Attributes attrs)
+					throws SAXException {
+		
+	}
+
+	/**
+	 * 元素结束时回调
+	 */
+	@Override
+	public void endElement(String namespaceURI,
+			String localName, String qName) throws SAXException {
+		
+	}
+
+	/**
+	 * 标签字符串处理
+	 */
+	@Override
+	public void characters(char[] ch, int start, int length)
+			throws SAXException {
+		
+	}
 }
