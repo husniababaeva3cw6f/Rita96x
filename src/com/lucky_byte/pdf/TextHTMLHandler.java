@@ -22,16 +22,38 @@
  */
 package com.lucky_byte.pdf;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+
 public class TextHTMLHandler extends DefaultHandler
 {
 	private TextParser parser;
+	private OutputStream html_stream;
+	private StringBuilder text_builder;
+	private JSONObject json_object;
+
+	private String html_open = "<!DOCTYPE html>\n"
+			+ "<html>\n"
+			+ "  <head>\n"
+			+ "    <title>__TITLE__</title>\n"
+			+ "    <meta name=\"author\" content=\"Lucky Byte, Inc.\"/>\n"
+			+ "  </head>\n"
+			+ "  <body>\n";
+
+	private String html_close = "  </body>\n</html>\n";
 
 	public TextHTMLHandler(TextParser parser) {
 		this.parser = parser;
+		this.html_stream = parser.out_stream;
+		this.text_builder = new StringBuilder();
 	}
 
 	/**
@@ -39,7 +61,34 @@ public class TextHTMLHandler extends DefaultHandler
 	 */
 	@Override
 	public void startDocument() throws SAXException {
-		
+		if (parser.json_stream != null) {
+			try {
+				InputStreamReader reader =
+						new InputStreamReader(parser.json_stream,
+								StandardCharsets.UTF_8);
+				JSONParser json_parser = new JSONParser();
+				json_object = (JSONObject) json_parser.parse(
+						new BufferedReader(reader));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				throw new SAXException("Failed to parse JSON stream");
+			}
+		}
+		if (json_object != null) {
+			if (json_object.containsKey("title")) {
+				Object value = json_object.get("title");
+				if (value instanceof String) {
+					html_open = html_open.replace("__TITLE__",
+							(CharSequence) value);
+				}
+			}
+		}
+		try {
+			html_stream.write(html_open.getBytes("UTF-8"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new SAXException("Write to stream failed.");
+		}
 	}
 
 	/**
@@ -47,6 +96,12 @@ public class TextHTMLHandler extends DefaultHandler
 	 */
 	@Override
 	public void endDocument() throws SAXException {
+		try {
+			html_stream.write(html_close.getBytes("UTF-8"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new SAXException("Write to stream failed.");
+		}
 	}
 
 	/**
@@ -56,7 +111,6 @@ public class TextHTMLHandler extends DefaultHandler
 	public void startElement(String namespaceURI,
 			String localName, String qName, Attributes attrs)
 					throws SAXException {
-		
 	}
 
 	/**
@@ -65,7 +119,6 @@ public class TextHTMLHandler extends DefaultHandler
 	@Override
 	public void endElement(String namespaceURI,
 			String localName, String qName) throws SAXException {
-		
 	}
 
 	/**
@@ -74,6 +127,8 @@ public class TextHTMLHandler extends DefaultHandler
 	@Override
 	public void characters(char[] ch, int start, int length)
 			throws SAXException {
-		
+		String contents = new String(ch, start, length);
+		text_builder.append(contents.trim());
 	}
+
 }

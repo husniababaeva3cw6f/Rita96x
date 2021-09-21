@@ -19,11 +19,14 @@ public class DocReaderTest
 					new FileInputStream("tests/test.doc");
 			OutputStream xml_stream =
 					new FileOutputStream("tests/test.xml");
+			OutputStream json_stream =
+					new FileOutputStream("tests/test.json");
 			
 			DocReader reader = new DocReader();
 			reader.setXSLUrl(new URL(new URL("file:"), "textpdf.xsl"));
 			reader.setAutoTitle(true);
-			reader.read(doc_stream, xml_stream);
+			reader.ignoreBlankPara(true);
+			reader.read(doc_stream, xml_stream, json_stream);
 
 			doc_stream.close();
 			xml_stream.close();

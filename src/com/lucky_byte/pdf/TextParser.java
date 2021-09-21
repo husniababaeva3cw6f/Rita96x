@@ -62,6 +62,10 @@ public class TextParser
 	InputStream json_stream;
 	OutputStream out_stream;
 
+	public static final String[] BLOCK_ELEMENTS = {
+			"title", "section", "para", "pagebreak",
+	};
+
 	public TextParser() {
 	}
 
@@ -127,10 +131,6 @@ class TextPDFHandler extends DefaultHandler
 	private JSONObject json_object;
 	private JSONObject json_data;
 	
-	private String[] block_labels = {
-			"title", "section", "para",
-	};
-
 	public TextPDFHandler(TextParser parser)
 			throws IOException, ParseException {
 		chunk_list = new ArrayList<TextChunk>();
@@ -254,7 +254,7 @@ class TextPDFHandler extends DefaultHandler
 		}
 
 		// Block 元素不可嵌套
-		for (String label : block_labels) {
+		for (String label : TextParser.BLOCK_ELEMENTS) {
 			if (label.equalsIgnoreCase(qName)) {
 				chunk_list.clear();
 				break;
@@ -359,7 +359,7 @@ class TextPDFHandler extends DefaultHandler
 			chunk_list.add(chunk.clone());
 		}
 
-		for (String label : block_labels) {
+		for (String label : TextParser.BLOCK_ELEMENTS) {
 			// 空段落，需要增加一个空 TextChunk 对象去模拟空段落
 			if (chunk_list.size() == 0 && label.equalsIgnoreCase("para")) {
 				chunk.setContents(" ");
