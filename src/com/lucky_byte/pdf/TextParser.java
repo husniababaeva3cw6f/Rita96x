@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
@@ -58,42 +59,58 @@ import com.itextpdf.text.Rectangle;
  */
 public class TextParser
 {
+	static final public int DOC_TYPE_PDF  = 1;
+	static final public int DOC_TYPE_HTML = 2;
+
 	InputStream xml_stream;
 	InputStream json_stream;
 	OutputStream out_stream;
+	URL css_url, js_url;
 
 	public static final String[] BLOCK_ELEMENTS = {
 			"title", "section", "para", "pagebreak",
 	};
 
-	public TextParser() {
-	}
-
-	private void parse(InputStream xml_stream, DefaultHandler handler)
-			throws ParserConfigurationException, SAXException, IOException {
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(false);
-		SAXParser parser = factory.newSAXParser();
-		parser.parse(xml_stream, handler);
-	}
-
 	/**
-	 * 解析 XML 模板并生成 PDF 文档
+	 * 解析 XML 模板并生成输出文档
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
 	 * @throws DocumentException 
 	 * @throws ParseException 
 	 */
-	public void genPDF(InputStream xml_stream,
-			InputStream json_stream, OutputStream pdf_stream)
+	public void genDoc(int doc_type, InputStream xml_stream,
+			InputStream json_stream, OutputStream pdf_stream,
+			URL css_url, URL js_url)
 				throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
 		this.xml_stream = xml_stream;
 		this.json_stream = json_stream;
 		this.out_stream = pdf_stream;
+		this.css_url = css_url;
+		this.js_url = js_url;
 
-		parse(xml_stream, new TextPDFHandler(this));
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(false);
+		SAXParser parser = factory.newSAXParser();
+		parser.parse(xml_stream, new TextDocHandler(this, doc_type));
+	}
+
+	/**
+	 * 解析 XML 模板并生成 PDF 文档
+	 * @param xml_stream
+	 * @param json_stream
+	 * @param pdf_stream
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	public void genPDF(InputStream xml_stream,
+			InputStream json_stream, OutputStream pdf_stream)
+				throws ParserConfigurationException,
+					SAXException, IOException, ParseException {
+		genDoc(DOC_TYPE_PDF, xml_stream, json_stream, pdf_stream, null, null);
 	}
 
 	/**
@@ -103,16 +120,15 @@ public class TextParser
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ParseException 
 	 */
 	public void genHTML(InputStream xml_stream,
-			InputStream json_stream, OutputStream html_stream)
+			InputStream json_stream, OutputStream html_stream,
+			URL css_url, URL js_url)
 				throws ParserConfigurationException,
-					SAXException, IOException {
-		this.xml_stream = xml_stream;
-		this.json_stream = json_stream;
-		this.out_stream = html_stream;
-
-		parse(xml_stream, new TextHTMLHandler(this));
+					SAXException, IOException, ParseException {
+		genDoc(DOC_TYPE_HTML, xml_stream, json_stream,
+				html_stream, css_url, js_url);
 	}
 }
 
@@ -121,24 +137,34 @@ public class TextParser
  * 解析 XML 模板，并生成 PDF 文件
  *
  */
-class TextPDFHandler extends DefaultHandler
+class TextDocHandler extends DefaultHandler
 {
 	private TextParser parser;
-	private PDFDoc pdfdoc;
+	private TextDoc text_doc;
 	private List<TextChunk> chunk_list;
 	private Stack<TextChunk> chunk_stack;
 	private StringBuilder contents_builder;
 	private JSONObject json_object;
 	private JSONObject json_data;
 	
-	public TextPDFHandler(TextParser parser)
+	public TextDocHandler(TextParser parser, int doc_type)
 			throws IOException, ParseException {
 		chunk_list = new ArrayList<TextChunk>();
 		chunk_stack = new Stack<TextChunk>();
 		contents_builder = new StringBuilder();
 
 		this.parser = parser;
-		this.pdfdoc = new PDFDoc(parser.out_stream);
+
+		switch(doc_type) {
+		case TextParser.DOC_TYPE_PDF:
+			text_doc = new PDFDoc(parser.out_stream);
+			break;
+		case TextParser.DOC_TYPE_HTML:
+			text_doc = new HTMLDoc(parser.out_stream);
+			break;
+		default:
+			throw new IOException("Document type unsupported.");
+		}
 	}
 
 	/**
@@ -200,7 +226,7 @@ class TextPDFHandler extends DefaultHandler
 		if (value != null) {
 			for (Object[] item : page_size_map) {
 				if (value.equalsIgnoreCase((String) item[0])) {
-					pdfdoc.setPageSize((Rectangle) item[1]);
+					text_doc.setPageSize((Rectangle) item[1]);
 					break;
 				}
 			}
@@ -214,7 +240,7 @@ class TextPDFHandler extends DefaultHandler
 				System.err.println("Page margin format error.");
 			} else {
 				try {
-					pdfdoc.setPageMargin(
+					text_doc.setPageMargin(
 							Integer.parseInt(array[0].trim()),
 							Integer.parseInt(array[1].trim()),
 							Integer.parseInt(array[2].trim()),
@@ -236,19 +262,19 @@ class TextPDFHandler extends DefaultHandler
 		TextChunk prev_chunk = null;
 		
 		if (qName.equalsIgnoreCase("textpdf")) {
-			if (pdfdoc.isOpen()) {
+			if (text_doc.isOpen()) {
 				throw new SAXException("'textpdf' must be root element.");
 			}
 
 			// 必须先设置页面属性再打开文档
 			setupPage(attrs);
-			if (!pdfdoc.open()) {
+			if (!text_doc.open()) {
 				throw new SAXException("Open document failed.");
 			}
 			return;
 		}
 
-		if (!pdfdoc.isOpen()) {
+		if (!text_doc.isOpen()) {
 			throw new SAXException("Document unopen yet. "
 					+ "check your xml root element is 'textpdf'");
 		}
@@ -337,11 +363,11 @@ class TextPDFHandler extends DefaultHandler
 	public void endElement(String namespaceURI,
 			String localName, String qName) throws SAXException {
 		if (qName.equalsIgnoreCase("textpdf")){
-			pdfdoc.close();
+			text_doc.close();
 			return;
 		}
 		if (qName.equalsIgnoreCase("pagebreak")) {
-			pdfdoc.newPage();
+			text_doc.newPage();
 			return;
 		}
 		if (qName.equalsIgnoreCase("break")) {
@@ -369,7 +395,7 @@ class TextPDFHandler extends DefaultHandler
 			if (chunk_list.size() > 0) {
 				if (label.equalsIgnoreCase(qName)) {
 					try {
-						pdfdoc.writeBlock(qName, chunk_list);
+						text_doc.writeBlock(qName, chunk_list);
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw new SAXException("Write to PDF failed.");

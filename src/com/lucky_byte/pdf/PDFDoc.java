@@ -33,9 +33,7 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.SplitCharacter;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfChunk;
@@ -76,7 +74,7 @@ class PDFBlockDefault
  * 这个类封装 PDF 文档相关的操作，通过 iText 实现。
  * 如果需要水印、印章等特殊效果，请参考 PDFProcess 类。
  */
-public class PDFDoc
+public class PDFDoc extends TextDoc
 {
 	public final static int BLOCK_TITLE = 1;
 	public final static int BLOCK_SECTION = 2;
@@ -96,13 +94,6 @@ public class PDFDoc
 	};
 	private List<PDFBlockDefault> block_defaults;
 
-	private Rectangle page_size = PageSize.A4;
-	private int page_margin_left = 50;
-	private int page_margin_right = 50;
-	private int page_margin_top = 50;
-	private int page_margin_bottom = 50;
-
-	private OutputStream pdf_stream;
 	private Document document;
 	private PdfWriter writer;
 
@@ -115,7 +106,7 @@ public class PDFDoc
 	};
 
 	public PDFDoc(OutputStream pdf_stream) {
-		this.pdf_stream = pdf_stream;
+		super(pdf_stream);
 		
 		block_defaults = new ArrayList<PDFBlockDefault>();
 
@@ -135,11 +126,12 @@ public class PDFDoc
 	 * 打开 PDF 文档进行操作
 	 * @return 成功或失败
 	 */
+	@Override
 	public boolean open() {
 		try {
 			document = new Document(page_size, page_margin_left,
 					page_margin_right, page_margin_top, page_margin_bottom);
-			writer = PdfWriter.getInstance(document, pdf_stream);
+			writer = PdfWriter.getInstance(document, out_stream);
 			writer.setCompressionLevel(0);
 			document.open();
 			return true;
@@ -152,6 +144,7 @@ public class PDFDoc
 	/**
 	 * 关闭 PDF 文档，关闭后不能继续操作文档
 	 */
+	@Override
 	public void close() {
 		document.close();
 	}
@@ -160,32 +153,11 @@ public class PDFDoc
 	 * 测试文档是否已打开
 	 * @return
 	 */
+	@Override
 	public boolean isOpen() {
 		if (document == null)
 			return false;
 		return document.isOpen();
-	}
-
-	/**
-	 * 设置页面大小
-	 * @param page_size
-	 */
-	public void setPageSize(Rectangle page_size) {
-		this.page_size = page_size;
-	}
-
-	/**
-	 * 设置页面边距
-	 * @param left
-	 * @param right
-	 * @param top
-	 * @param bottom
-	 */
-	public void setPageMargin(int left, int right, int top, int bottom) {
-		page_margin_left = left;
-		page_margin_right = right;
-		page_margin_top = top;
-		page_margin_bottom = bottom;
 	}
 
 	/**
