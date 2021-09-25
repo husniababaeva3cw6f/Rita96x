@@ -110,7 +110,8 @@ public class TextParser
 			InputStream json_stream, OutputStream pdf_stream)
 				throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
-		genDoc(DOC_TYPE_PDF, xml_stream, json_stream, pdf_stream, null, null);
+		genDoc(DOC_TYPE_PDF, xml_stream, json_stream,
+				pdf_stream, null, null);
 	}
 
 	/**
@@ -161,6 +162,7 @@ class TextDocHandler extends DefaultHandler
 			break;
 		case TextParser.DOC_TYPE_HTML:
 			text_doc = new HTMLDoc(parser.out_stream);
+			((HTMLDoc) text_doc).setURL(parser.css_url, parser.js_url);
 			break;
 		default:
 			throw new IOException("Document type unsupported.");
@@ -179,16 +181,21 @@ class TextDocHandler extends DefaultHandler
 			JSONParser json_parser = new JSONParser();
 			json_object = (JSONObject) json_parser.parse(
 					new BufferedReader(reader));
-			if (!json_object.containsKey("data")) {
-				System.err.println(
-						"JSON source missing 'data' key, please check!");
-			} else {
-				Object value = json_object.get("data");
-				if (!(value instanceof JSONObject)) {
-					System.err.println("JSON 'data' must be a object.");
+
+			if (text_doc instanceof PDFDoc) {
+				if (!json_object.containsKey("data")) {
+					System.err.println(
+							"JSON source missing 'data' key, please check!");
 				} else {
-					json_data = (JSONObject) value;
+					Object value = json_object.get("data");
+					if (!(value instanceof JSONObject)) {
+						System.err.println("JSON 'data' must be a object.");
+					} else {
+						json_data = (JSONObject) value;
+					}
 				}
+			} else if (text_doc instanceof HTMLDoc) {
+				((HTMLDoc) text_doc).setJSONObject(json_object);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
