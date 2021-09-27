@@ -32,6 +32,7 @@ public class TextChunk
 {
 	private String contents;
 	private Map<String, String> attrs;
+	private boolean is_value;
 
 	public TextChunk() {
 		attrs = new HashMap<String, String>();
@@ -70,6 +71,14 @@ public class TextChunk
 		}
 	}
 
+	public boolean isValue() {
+		return is_value;
+	}
+
+	public void setIsValue(boolean is_value) {
+		this.is_value = is_value;
+	}
+
 	public TextChunk clone() {
 		TextChunk chunk = new TextChunk();
 
@@ -79,6 +88,8 @@ public class TextChunk
 					new String(this.attrs.get(key)));
 		}
 		chunk.contents = new String(this.contents);
+		chunk.is_value = this.is_value;
 		return chunk;
 	}
+
 }

@@ -313,23 +313,27 @@ class TextDocHandler extends DefaultHandler
 		chunk.addAttrs(attrs);
 
 		if (qName.equalsIgnoreCase("value")) {
+			chunk.setIsValue(true);
+
 			String id = attrs.getValue("id");
 			if (id == null) {
 				System.err.println("Value element missing 'id' attribute.");
 			} else {
-				if (json_data != null) {
-					if (!json_data.containsKey(id)) {
-						System.err.println("JSON data key '" + id
-								+ "' not found!");
-					} else {
-						Object value = json_data.get(id);
-						if (!(value instanceof String)) {
-							System.err.println("JSON  data key '" + id
-									+ "' must has a string value.");
+				if (text_doc instanceof PDFDoc) {
+					if (json_data != null) {
+						if (!json_data.containsKey(id)) {
+							System.err.println("JSON data key '" + id
+									+ "' not found!");
 						} else {
-							contents_builder.append(value);
-							if (attrs.getValue("font-style") == null) {
-								chunk.addAttr("font-style", "bold,underline");
+							Object value = json_data.get(id);
+							if (!(value instanceof String)) {
+								System.err.println("JSON  data key '" + id
+										+ "' must has a string value.");
+							} else {
+								contents_builder.append(value);
+								if (attrs.getValue("font-style") == null) {
+									chunk.addAttr("font-style", "bold,underline");
+								}
 							}
 						}
 					}
@@ -385,7 +389,8 @@ class TextDocHandler extends DefaultHandler
 		TextChunk chunk = chunk_stack.pop();
 
 		String contents = contents_builder.toString();
-		if (contents.length() > 0 || qName.equalsIgnoreCase("value") ||
+		if (contents.length() > 0 ||
+				qName.equalsIgnoreCase("value") ||
 				qName.equalsIgnoreCase("hspace")) {
 			chunk.setContents(contents.replaceAll("[ \t\f]*\n+[ \t\f]*", ""));
 			contents_builder.setLength(0);
