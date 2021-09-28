@@ -221,6 +221,7 @@ public class HTMLDoc extends TextDoc
 
 	@Override
 	public void newPage() {
+		writeStream("<hr/>");
 	}
 
 }
