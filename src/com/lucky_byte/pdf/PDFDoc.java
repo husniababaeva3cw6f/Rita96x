@@ -77,8 +77,9 @@ class PDFBlockDefault
 public class PDFDoc extends TextDoc
 {
 	public final static int BLOCK_TITLE = 1;
-	public final static int BLOCK_SECTION = 2;
-	public final static int BLOCK_PARA = 3;
+	public final static int BLOCK_CHAPTER = 2;
+	public final static int BLOCK_SECTION = 3;
+	public final static int BLOCK_PARA = 4;
 
 	public final static int FONT_FAMILY_HEI = 1;
 	public final static int FONT_FAMILY_SONG = 2;
@@ -88,9 +89,10 @@ public class PDFDoc extends TextDoc
 	public static final int FONT_STYLE_ITALIC = 4;
 
 	private Object[][] block_types = {
-			{ "title", BLOCK_TITLE },
+			{ "title",   BLOCK_TITLE },
+			{ "chapter", BLOCK_CHAPTER },
 			{ "section", BLOCK_SECTION },
-			{ "para", BLOCK_PARA },
+			{ "para",    BLOCK_PARA },
 	};
 	private List<PDFBlockDefault> block_defaults;
 
@@ -114,9 +116,12 @@ public class PDFDoc extends TextDoc
 		block_defaults.add(new PDFBlockDefault(BLOCK_TITLE,
 				FONT_FAMILY_HEI, 18, FONT_STYLE_BOLD,
 				Element.ALIGN_CENTER, 0.0f, 0.0f, 16.0f));
-		block_defaults.add(new PDFBlockDefault(BLOCK_SECTION,
+		block_defaults.add(new PDFBlockDefault(BLOCK_CHAPTER,
 				FONT_FAMILY_SONG, 16, FONT_STYLE_BOLD,
-				Element.ALIGN_LEFT, 0.0f, 13.0f, 0.0f));
+				Element.ALIGN_LEFT, 0.0f, 14.0f, 0.0f));
+		block_defaults.add(new PDFBlockDefault(BLOCK_SECTION,
+				FONT_FAMILY_SONG, 14, FONT_STYLE_BOLD,
+				Element.ALIGN_LEFT, 0.0f, 12.0f, 0.0f));
 		block_defaults.add(new PDFBlockDefault(BLOCK_PARA,
 				FONT_FAMILY_SONG, 12, 0,
 				Element.ALIGN_LEFT, 22.0f, 6.0f, 0.0f));

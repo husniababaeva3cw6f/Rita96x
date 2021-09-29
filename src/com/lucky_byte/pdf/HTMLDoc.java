@@ -98,9 +98,10 @@ public class HTMLDoc extends TextDoc
 	}
 
 	private String[][] block_labels = {
-			{ "title", "h1" },
-			{ "section", "h2" },
-			{ "para", "p" },
+			{ "title",   "h1" },
+			{ "chapter", "h2" },
+			{ "section", "h3" },
+			{ "para",    "p" },
 	};
 
 	private String getHtmlLabel(String block_name) {

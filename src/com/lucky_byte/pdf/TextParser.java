@@ -68,7 +68,7 @@ public class TextParser
 	URL css_url, js_url;
 
 	public static final String[] BLOCK_ELEMENTS = {
-			"title", "section", "para", "pagebreak",
+			"title", "chapter", "section", "para", "pagebreak",
 	};
 
 	/**
