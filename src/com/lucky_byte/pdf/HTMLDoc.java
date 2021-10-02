@@ -152,6 +152,9 @@ public class HTMLDoc extends TextDoc
 			case ' ':
 				builder.append("&nbsp;");
 				break;
+			case '\t':
+				builder.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+				break;
 			case '&':
 				builder.append("&amp;");
 				break;
@@ -161,6 +164,8 @@ public class HTMLDoc extends TextDoc
 			case '>':
 				builder.append("&gt;");
 				break;
+			case '\n':
+				builder.append("<br/>");
 			default:
 				builder.append(ch);
 			}
