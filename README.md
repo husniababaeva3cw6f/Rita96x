@@ -65,10 +65,15 @@ TextPDF 可以将`.doc`文件转换成 TextPDF 的 XML 模板文件，对于`.do
 ### 命令行用法
 
 ```sh
-java -jar textpdf xmlfile jsonfile
+java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]
+
+Options:
+  -o filename:  Output pdf file name
 ```
 
-其中 `xmlfile` 和 `jsonfile` 分别是模板和数据源，生成的 PDF 文件和 `xmlfile` 同名，后缀为 `.pdf`。
+`xmlfile`|`docfile` 作为文档模板输入源，`jsonfile 为数据输入源，默认的 PDF 输出文件名称和 `xmlfile` 同名，后缀为 `.pdf`，可以通过 `-o`选项改变输出文件名称。
+
+> 版本 0.2 开始，可以直接将 .doc 文件转换为 PDF 文件，这只不过是先将 .doc 转换为 XML 模板，然后再通过模板转换为 PDF。这只是为了方便，TextPDF 的目标不是将 .doc 转换为 PDF，这方面使用 LibreOffice 或者其它工具可以得到更加专业的效果。
 
 ### 程序调用
 

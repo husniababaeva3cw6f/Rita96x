@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,14 +94,14 @@ public class TextPDF
 	/**
 	 * 命令行程序入口
 	 * @param args 命令行参数
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		List<String> args2 = new ArrayList<String>();
 		String pdf_fname = null;
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-o")) {
-				System.out.println("i = " + i + " size = " + args.length);
 				if (i >= args.length - 1) {
 					System.err.println("'-o' option require a argument");
 					return;
@@ -116,8 +118,8 @@ public class TextPDF
 			System.err.println("Argument missing...");
 			System.err.println();
 			System.err.println("Usage:");
-			System.err.println("  java -jar textpdf.jar [OPTION] xmlfile jsonfile");
-			System.err.println("[Options]");
+			System.err.println("  java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]");
+			System.err.println("\nOptions:");
 			System.err.println("  -o filename:  Output pdf file name");
 			System.err.println();
 			return;
@@ -132,7 +134,6 @@ public class TextPDF
 			System.err.println(jsonfile.getAbsolutePath() + " not found.");
 			return;
 		}
-
 		if (pdf_fname == null) {
 			pdf_fname = args2.get(0) + ".pdf";
 		}
@@ -143,6 +144,19 @@ public class TextPDF
 		}
 
 		try {
+			if (args2.get(0).endsWith(".doc")) {
+				File tmpfile = File.createTempFile("textpdf-", ".xml");
+
+				DocReader reader = new DocReader();
+				reader.setAutoTitle(true);
+				reader.ignoreBlankPara(true);
+				InputStream doc_stream =
+						new FileInputStream(xmlfile);
+				OutputStream xml_stream =
+						new FileOutputStream(tmpfile);
+				reader.read(doc_stream, xml_stream, null);
+				xmlfile = tmpfile;
+			}
 			TextPDF.gen(xmlfile, jsonfile, pdffile);
 		} catch (Exception e) {
 			e.printStackTrace();
