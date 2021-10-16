@@ -17,13 +17,18 @@ public class HTMLDoc extends TextDoc
 {
 	private boolean is_open = false;
 	private JSONObject json_object;
-	private URL css_url, js_url;
+	private List<URL> css_urls;
+	private List<URL> js_urls;
 
-	private String html_open = "<!DOCTYPE html>\n"
+	private String html_open = ""
+			+ "<!DOCTYPE html>\n"
 			+ "<html>\n"
 			+ "  <head>\n"
 			+ "    <title>__TITLE__</title>\n"
 			+ "    <meta name=\"author\" content=\"Lucky Byte, Inc.\"/>\n"
+			+ "    <meta name=\"generator\" content=\"TextPDF\" />\n"
+			+ "    <meta name=\"description\" content=\"TextPDF Editor\" />\n"
+			+ "    <meta name=\"keywords\" content=\"TextPDF,PDF,Template\" />\n"
 			+ "    __CSS_URL__\n"
 			+ "    __JS_URL__\n"
 			+ "  </head>\n"
@@ -39,9 +44,9 @@ public class HTMLDoc extends TextDoc
 		this.json_object = json_object;
 	}
 
-	public void setURL(URL css_url, URL js_url) {
-		this.css_url = css_url;
-		this.js_url = js_url;
+	public void setURL(List<URL> css_urls, List<URL> js_urls) {
+		this.css_urls = css_urls;
+		this.js_urls = js_urls;
 	}
 
 	private boolean writeStream(String string) {
@@ -71,15 +76,25 @@ public class HTMLDoc extends TextDoc
 				}
 			}
 		}
-		if (css_url != null) {
-			html_open = html_open.replace("__CSS_URL__",
-					"<link rel=\"stylesheet\" type=\"text/css\" href=\"" +
-							css_url.getPath() + "\" />");
+		if (css_urls != null) {
+			StringBuilder builder = new StringBuilder();
+			for (URL url : css_urls) {
+				builder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"");
+				builder.append(url.getPath());
+				builder.append("\"/>\n");
+			}
+			html_open = html_open.replace(
+					"__CSS_URL__", builder.toString().trim());
 		}
-		if (js_url != null) {
-			html_open = html_open.replace("__JS_URL__",
-					"<script src=\"" +
-							js_url.getPath() + "\"></script>");
+		if (js_urls != null) {
+			StringBuilder builder = new StringBuilder();
+			for (URL url : js_urls) {
+				builder.append("    <script src=\"");
+				builder.append(url.getPath());
+				builder.append("\"></script>\n");
+			}
+			html_open = html_open.replace(
+					"__JS_URL__", builder.toString().trim());
 		}
 		is_open = true;
 		return writeStream(html_open);

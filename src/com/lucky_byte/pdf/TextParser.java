@@ -65,7 +65,8 @@ public class TextParser
 	InputStream xml_stream;
 	InputStream json_stream;
 	OutputStream out_stream;
-	URL css_url, js_url;
+	List<URL> css_urls;
+	List<URL> js_urls;
 
 	public static final String[] BLOCK_ELEMENTS = {
 			"title", "chapter", "section", "para", "pagebreak",
@@ -81,14 +82,14 @@ public class TextParser
 	 */
 	public void genDoc(int doc_type, InputStream xml_stream,
 			InputStream json_stream, OutputStream pdf_stream,
-			URL css_url, URL js_url)
+			List<URL> css_urls, List<URL> js_urls)
 				throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
 		this.xml_stream = xml_stream;
 		this.json_stream = json_stream;
 		this.out_stream = pdf_stream;
-		this.css_url = css_url;
-		this.js_url = js_url;
+		this.css_urls = css_urls;
+		this.js_urls = js_urls;
 
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(false);
@@ -125,11 +126,11 @@ public class TextParser
 	 */
 	public void genHTML(InputStream xml_stream,
 			InputStream json_stream, OutputStream html_stream,
-			URL css_url, URL js_url)
+			List<URL> css_urls, List<URL> js_urls)
 				throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
 		genDoc(DOC_TYPE_HTML, xml_stream, json_stream,
-				html_stream, css_url, js_url);
+				html_stream, css_urls, js_urls);
 	}
 }
 
@@ -162,7 +163,7 @@ class TextDocHandler extends DefaultHandler
 			break;
 		case TextParser.DOC_TYPE_HTML:
 			text_doc = new HTMLDoc(parser.out_stream);
-			((HTMLDoc) text_doc).setURL(parser.css_url, parser.js_url);
+			((HTMLDoc) text_doc).setURL(parser.css_urls, parser.js_urls);
 			break;
 		default:
 			throw new IOException("Document type unsupported.");
