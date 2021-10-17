@@ -109,6 +109,10 @@ public class TextPDF
 				pdf_fname = args[i + 1];
 				i++;
 				continue;
+			} else if (args[i].equals("-v")) {
+				System.out.println("TextPDF version " + Version.VERSION);
+				System.out.println("\nCopyright (c) 2015 Lucky Byte, Inc.\n");
+				return;
 			} else {
 				args2.add(args[i]);
 			}
@@ -121,6 +125,7 @@ public class TextPDF
 			System.err.println("  java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]");
 			System.err.println("\nOptions:");
 			System.err.println("  -o filename:  Output pdf file name");
+			System.err.println("  -v:           Print version");
 			System.err.println();
 			return;
 		}

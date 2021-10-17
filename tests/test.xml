@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<textpdf>
+  <title>标题</title>
+  <title>一个文档中可以有多个标题</title>
+  <title font-size="32" font-style="underline">标题可以自定义属性</title>
+
+  <chapter>第一章</chapter>
+  <chapter indent="30">第二章、可以通过 indent 来缩进</chapter>
+
+  <section>第一节</section>
+
+  <para>这是一段<span font-style="underline">简单的</span>文字。</para>
+
+  <para>可以通过 value 作为动态数据<value id="vid_01"/>，其数据来自于 test.json 文件。</para>
+
+  <para>一段文字不能通过在模板中输入换行符
+    来换行，因为解析器会忽略模板中的回车符。如果需要强行换行，应该使用<break/>break 标签</para>
+
+  <para>    一段文字中的前后空白字符会被删除掉，但是中间    的空白会保留下来。如果需要左边缩进，请使用 indent 属性。</para>
+
+  <pagebreak/> <!-- 强行换页 -->
+
+  <span>这种內联元素会被完全丢弃，就更没有写这段文字一样。</span>
+
+  <para>关于模板更详细的信息请参考 TextPDF 的 <span font-style="bold">wiki</span> 页面。</para>
+
+  <para font-style="italic" space-before="50">本内容由 Lucky Byte, Inc. 呈上</para>
+</textpdf>

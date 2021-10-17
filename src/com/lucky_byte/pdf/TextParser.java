@@ -300,7 +300,7 @@ class TextDocHandler extends DefaultHandler
 			String contents = contents_builder.toString();
 			if (contents.length() > 0) {
 				prev_chunk.setContents(
-						contents.replaceAll("[ \t\f]*\n+[ \t\f]*", ""));
+						contents);
 				contents_builder.setLength(0);
 				chunk_list.add(prev_chunk.clone());
 			}
@@ -365,7 +365,8 @@ class TextDocHandler extends DefaultHandler
 	public void characters(char[] ch, int start, int length)
 			throws SAXException {
 		String contents = new String(ch, start, length);
-		contents_builder.append(contents.trim());
+		contents_builder.append(
+				contents.replaceAll("\\s*\n+\\s*", "").trim());
 	}
 
 	/**
@@ -393,7 +394,7 @@ class TextDocHandler extends DefaultHandler
 		if (contents.length() > 0 ||
 				qName.equalsIgnoreCase("value") ||
 				qName.equalsIgnoreCase("hspace")) {
-			chunk.setContents(contents.replaceAll("[ \t\f]*\n+[ \t\f]*", ""));
+			chunk.setContents(contents);
 			contents_builder.setLength(0);
 			chunk_list.add(chunk.clone());
 		}
