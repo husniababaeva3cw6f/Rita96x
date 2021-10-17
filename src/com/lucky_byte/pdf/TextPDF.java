@@ -158,6 +158,10 @@ public class TextPDF
 				xmlfile = tmpfile;
 			}
 			TextPDF.gen(xmlfile, jsonfile, pdffile);
+
+			if (args2.get(0).endsWith(".doc")) {	// 删除临时文件
+				xmlfile.delete();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
