@@ -18,6 +18,14 @@
     来换行，因为解析器会忽略模板中的回车符。如果需要强行换行，应该使用<break/>break 标签</para>
 
   <para>    一段文字中的前后空白字符会被删除掉，但是中间    的空白会保留下来。如果需要左边缩进，请使用 indent 属性。</para>
+  <para>也可以通过 <span font-style="bold">hspace</span> <hspace size="10"/>来设定水平空白空间。</para>
+
+  <para align="center">文字可以居中对齐</para>
+  <para align="right">也可以右对齐</para>
+
+  <para space-before="30" space-after="50">可以通过 space-before 和 space-after 来设定段前段后空间。</para>
+
+  <para>下面将会强行换页，虽然本页还没有填满。</para>
 
   <pagebreak/> <!-- 强行换页 -->
 
