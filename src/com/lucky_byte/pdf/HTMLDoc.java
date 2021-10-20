@@ -163,26 +163,15 @@ public class HTMLDoc extends TextDoc
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < contents.length(); i++) {
 			char ch = contents.charAt(i);
-			switch (ch) {
-			case ' ':
-				builder.append("&nbsp;");
-				break;
-			case '\t':
-				builder.append("&nbsp;&nbsp;&nbsp;&nbsp;");
-				break;
-			case '&':
-				builder.append("&amp;");
-				break;
-			case '<':
-				builder.append("&lt;");
-				break;
-			case '>':
-				builder.append("&gt;");
-				break;
-			case '\n':
+			if (ch == '\n') {
 				builder.append("<br/>");
-			default:
-				builder.append(ch);
+			} else {
+				String escape = Util.escapeHTMLChars(ch);
+				if (escape != null) {
+					builder.append(escape);
+				} else {
+					builder.append(ch);
+				}
 			}
 		}
 		return builder.toString();

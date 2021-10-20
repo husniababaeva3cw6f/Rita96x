@@ -68,10 +68,6 @@ public class TextParser
 	List<URL> css_urls;
 	List<URL> js_urls;
 
-	public static final String[] BLOCK_ELEMENTS = {
-			"title", "chapter", "section", "para", "pagebreak",
-	};
-
 	/**
 	 * 解析 XML 模板并生成输出文档
 	 * @throws ParserConfigurationException
@@ -80,7 +76,7 @@ public class TextParser
 	 * @throws DocumentException 
 	 * @throws ParseException 
 	 */
-	public void genDoc(int doc_type, InputStream xml_stream,
+	public void parseAndGen(int doc_type, InputStream xml_stream,
 			InputStream json_stream, OutputStream pdf_stream,
 			List<URL> css_urls, List<URL> js_urls)
 				throws ParserConfigurationException,
@@ -111,7 +107,7 @@ public class TextParser
 			InputStream json_stream, OutputStream pdf_stream)
 				throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
-		genDoc(DOC_TYPE_PDF, xml_stream, json_stream,
+		parseAndGen(DOC_TYPE_PDF, xml_stream, json_stream,
 				pdf_stream, null, null);
 	}
 
@@ -129,7 +125,7 @@ public class TextParser
 			List<URL> css_urls, List<URL> js_urls)
 				throws ParserConfigurationException,
 					SAXException, IOException, ParseException {
-		genDoc(DOC_TYPE_HTML, xml_stream, json_stream,
+		parseAndGen(DOC_TYPE_HTML, xml_stream, json_stream,
 				html_stream, css_urls, js_urls);
 	}
 }
@@ -141,6 +137,10 @@ public class TextParser
  */
 class TextDocHandler extends DefaultHandler
 {
+	public static final String[] BLOCK_ELEMENTS = {
+			"title", "chapter", "section", "para", "pagebreak",
+	};
+
 	private TextParser parser;
 	private TextDoc text_doc;
 	private List<TextChunk> chunk_list;
@@ -288,7 +288,7 @@ class TextDocHandler extends DefaultHandler
 		}
 
 		// Block 元素不可嵌套
-		for (String label : TextParser.BLOCK_ELEMENTS) {
+		for (String label : BLOCK_ELEMENTS) {
 			if (label.equalsIgnoreCase(qName)) {
 				chunk_list.clear();
 				break;
@@ -398,7 +398,7 @@ class TextDocHandler extends DefaultHandler
 			chunk_list.add(chunk.clone());
 		}
 
-		for (String label : TextParser.BLOCK_ELEMENTS) {
+		for (String label : BLOCK_ELEMENTS) {
 			// 空段落，需要增加一个空 TextChunk 对象去模拟空段落
 			if (chunk_list.size() == 0 && label.equalsIgnoreCase("para")) {
 				chunk.setContents(" ");

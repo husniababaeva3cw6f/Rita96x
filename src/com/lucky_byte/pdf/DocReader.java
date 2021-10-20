@@ -140,6 +140,19 @@ public class DocReader
 		builder.append("\"");
 	}
 
+	private String textEscape(String text) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < text.length(); i++) {
+			String escape = Util.escapeXMLChars(text.charAt(i));
+			if (escape != null) {
+				builder.append(escape);
+			} else {
+				builder.append(text.charAt(i));
+			}
+		}
+		return builder.toString();
+	}
+
 	private void readCharacterRuns(Paragraph para, int para_index,
 			StringBuilder builder, boolean is_title) {
 		StringBuilder all_text = null;
@@ -164,26 +177,27 @@ public class DocReader
 			}
 
 			// \u3000: IDEOGRAPHIC SPACE
-			if (run.getUnderlineCode() == 1 && text.matches("^[\\s\u3000]+$")) {
-				String vid = "vid_" + para_index + "_" + j;
-				builder.append("    <value id=\"");
-				builder.append(vid);
-				builder.append("\" minlen=\"");
-				builder.append(text.length());
-				builder.append("\"");
-				appendRunAttrs(builder, run, false);
-				builder.append(" />\n");
-
-				if (json_data != null) {
-					json_data.put(vid, "");
+			if (text.matches("^[\\s\u3000]+$")) {
+				if (run.getUnderlineCode() == 1) {
+					String vid = "vid_" + para_index + "_" + j;
+					builder.append("    <value id=\"");
+					builder.append(vid);
+					builder.append("\" minlen=\"");
+					builder.append(text.length());
+					builder.append("\"");
+					appendRunAttrs(builder, run, false);
+					builder.append(" />\n");
+					if (json_data != null) {
+						json_data.put(vid, "");
+					}
+				} else {
+					builder.append("    <hspace");
+					builder.append(" size=\"");
+					builder.append(text.length());
+					builder.append("\"");
+					appendRunAttrs(builder, run, false);
+					builder.append(" />\n");
 				}
-			} else if (text.matches("^[\\s\u3000]+$")) {
-				builder.append("    <hspace");
-				builder.append(" size=\"");
-				builder.append(text.length());
-				builder.append("\"");
-				appendRunAttrs(builder, run, false);
-				builder.append(" />\n");
 			} else if (text.length() > 0) {
 //				System.out.println(">>> is NOT a value");
 //				if (i == 33) {
@@ -194,7 +208,7 @@ public class DocReader
 				builder.append("    <span");
 				appendRunAttrs(builder, run, true);
 				builder.append(">");
-				builder.append(text);
+				builder.append(textEscape(text));
 				builder.append("</span>\n");
 
 				if (all_text != null) {
