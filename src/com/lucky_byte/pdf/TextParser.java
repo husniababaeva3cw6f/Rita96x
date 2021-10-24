@@ -273,9 +273,6 @@ class TextDocHandler extends DefaultHandler
 			if (text_doc.isOpen()) {
 				throw new SAXException("'textpdf' must be root element.");
 			}
-
-			// 必须先设置页面属性再打开文档
-			setupPage(attrs);
 			if (!text_doc.open()) {
 				throw new SAXException("Open document failed.");
 			}
@@ -295,6 +292,11 @@ class TextDocHandler extends DefaultHandler
 			}
 		}
 
+		if (qName.equalsIgnoreCase("page")) {
+			setupPage(attrs);
+			text_doc.newPage();
+			return;
+		}
 		try{
 			prev_chunk = chunk_stack.peek();
 			String contents = contents_builder.toString();
@@ -384,6 +386,9 @@ class TextDocHandler extends DefaultHandler
 		}
 		if (qName.equalsIgnoreCase("break")) {
 			contents_builder.append("\n");
+			return;
+		}
+		if (qName.equalsIgnoreCase("page")) {
 			return;
 		}
 

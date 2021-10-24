@@ -142,8 +142,10 @@ public class PDFDoc extends TextDoc
 	@Override
 	public boolean open() {
 		try {
-			document = new Document(page_size, page_margin_left,
-					page_margin_right, page_margin_top, page_margin_bottom);
+			document = new Document();
+//			document.setPageSize(page_size);
+//			document.setMargins(page_margin_left, page_margin_right,
+//					page_margin_top, page_margin_bottom);
 			writer = PdfWriter.getInstance(document, out_stream);
 			writer.setCompressionLevel(0);
 			writer.setPageEvent(new PDFDocPageEvent());
@@ -172,6 +174,23 @@ public class PDFDoc extends TextDoc
 		if (document == null)
 			return false;
 		return document.isOpen();
+	}
+
+	@Override
+	public void setPageSize(Rectangle page_size) {
+		super.setPageSize(page_size);
+		if (isOpen()) {
+			document.setPageSize(page_size);
+		}
+	}
+
+	@Override
+	public void setPageMargin(int left, int right, int top, int bottom) {
+		super.setPageMargin(left, right, top, bottom);
+		if (isOpen()) {
+			document.setMargins(page_margin_left, page_margin_right,
+					page_margin_top, page_margin_bottom);
+		}
 	}
 
 	/**
@@ -560,6 +579,9 @@ public class PDFDoc extends TextDoc
 }
 
 
+/**
+ * 处理 PDF 事件
+ */
 class PDFDocPageEvent extends PdfPageEventHelper
 {
 	int page_num;
