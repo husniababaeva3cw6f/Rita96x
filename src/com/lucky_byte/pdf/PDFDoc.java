@@ -33,10 +33,18 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.SplitCharacter;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfChunk;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 
 
@@ -138,6 +146,7 @@ public class PDFDoc extends TextDoc
 					page_margin_right, page_margin_top, page_margin_bottom);
 			writer = PdfWriter.getInstance(document, out_stream);
 			writer.setCompressionLevel(0);
+			writer.setPageEvent(new PDFDocPageEvent());
 			document.open();
 			return true;
 		} catch (Exception e) {
@@ -546,6 +555,95 @@ public class PDFDoc extends TextDoc
 			return;
 		}
 		document.newPage();
+	}
+
+}
+
+
+class PDFDocPageEvent extends PdfPageEventHelper
+{
+	int page_num;
+	PdfTemplate total;
+
+	@Override
+	public void onOpenDocument(PdfWriter writer, Document document) {
+		total = writer.getDirectContent().createTemplate(30, 16);
+	}
+
+	@Override
+	public void onCloseDocument(PdfWriter writer, Document document) {
+		ColumnText.showTextAligned(total, Element.ALIGN_LEFT,
+				new Phrase(String.valueOf(writer.getPageNumber() - 1)), 2, 2, 0);
+	}
+
+	@Override
+	public void onStartPage(PdfWriter writer, Document document) {
+		page_num++;
+	}
+
+	@Override
+	public void onEndPage(PdfWriter writer, Document document) {
+		PdfPTable table = new PdfPTable(3);
+		try {
+			table.setWidths(new int[]{24, 24, 2});
+			table.setTotalWidth(527);
+			table.setLockedWidth(true);
+			table.getDefaultCell().setFixedHeight(20);
+			table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+			table.addCell("页眉");
+			table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
+			table.addCell(String.format("Page %d of", writer.getPageNumber()));
+			PdfPCell cell = new PdfPCell(Image.getInstance(total));
+			cell.setBorder(Rectangle.BOTTOM);
+			table.addCell(cell);
+			table.writeSelectedRows(0, -1, 34, 803, writer.getDirectContent());
+		} catch(DocumentException de) {
+			de.printStackTrace();
+		}
+	}
+
+	@Override
+	public void onGenericTag(PdfWriter writer, Document pdfDocument,
+			Rectangle rect, String text) {
+		
+	}
+
+	@Override
+	public void onParagraph(
+			PdfWriter writer, Document pdfDocument,
+			float paragraphPosition) {
+		
+	}
+
+	@Override
+	public void onParagraphEnd(
+			PdfWriter writer, Document pdfDocument,
+			float paragraphPosition) {
+	}
+
+	@Override
+	public void onChapter(
+			PdfWriter writer, Document document,
+			float position, Paragraph title) {
+		
+	}
+
+	@Override
+	public void onChapterEnd(
+			PdfWriter writer, Document document, float position) {
+
+	}
+
+	@Override
+	public void onSection(
+			PdfWriter writer, Document document,
+			float position, int depth, Paragraph title) {
+	}
+
+	@Override
+	public void onSectionEnd(
+			PdfWriter writer, Document document, float position) {
+		
 	}
 
 }
