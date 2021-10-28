@@ -230,7 +230,7 @@ class TextDocHandler extends DefaultHandler
 
 	private void setupPage(Attributes attrs) {
 		// 页面大小
-		String value = attrs.getValue("page-size");
+		String value = attrs.getValue("size");
 		if (value != null) {
 			for (Object[] item : page_size_map) {
 				if (value.equalsIgnoreCase((String) item[0])) {
@@ -241,7 +241,7 @@ class TextDocHandler extends DefaultHandler
 		}
 
 		// 页面边距
-		value = attrs.getValue("page-margin");
+		value = attrs.getValue("margin");
 		if (value != null) {
 			String[] array = value.split(",");
 			if (array.length < 4) {

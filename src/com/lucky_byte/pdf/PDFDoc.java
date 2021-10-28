@@ -143,11 +143,13 @@ public class PDFDoc extends TextDoc
 	public boolean open() {
 		try {
 			document = new Document();
-//			document.setPageSize(page_size);
-//			document.setMargins(page_margin_left, page_margin_right,
-//					page_margin_top, page_margin_bottom);
+			document.addCreator("TextPDF " + Version.VERSION);
+			document.addCreationDate();
+			document.addAuthor("TextPDF");
+			document.addLanguage("zh_CN");
+			document.addKeywords("TextPDF");
 			writer = PdfWriter.getInstance(document, out_stream);
-			writer.setCompressionLevel(0);
+			writer.setCompressionLevel(9);
 			writer.setPageEvent(new PDFDocPageEvent());
 			document.open();
 			return true;
