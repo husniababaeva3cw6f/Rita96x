@@ -404,10 +404,24 @@ public class PDFDoc extends TextDoc
 			PDFBlockDefault block_default)
 					throws DocumentException, IOException {
 		Chunk chunk = new Chunk();
+		Map<String, String> attrs = text_chunk.getAttrs();
+
+		String value = attrs.get("super");
+		if (value != null && value.equalsIgnoreCase("true")) {
+			chunk.setTextRise(6.0f);
+			attrs.put("font-size", "8");
+			attrs.remove("font-style");
+		}
+		value = attrs.get("sub");
+		if (value != null && value.equalsIgnoreCase("true")) {
+			chunk.setTextRise(-3.0f);
+			attrs.put("font-size", "8");
+			attrs.remove("font-style");
+		}
 
 		String contents = text_chunk.getContents();
 
-		String value = text_chunk.getAttrs().get("minlen");
+		value = text_chunk.getAttrs().get("minlen");
 		if (value != null && value.length() > 0) {
 			if (contents.length() == 0) {
 				chunk.setUnderline(1.0f, -4.0f);
@@ -460,7 +474,6 @@ public class PDFDoc extends TextDoc
 							+ value + "' unknown.");
 				}
 			}
-
 			// 设置段落缩进
 			value = attrs.get("indent");
 			if (value != null) {
@@ -472,7 +485,6 @@ public class PDFDoc extends TextDoc
 							"Indent attribute must has a float value");
 				}
 			}
-
 			// 设置段落前空间
 			value = attrs.get("space-before");
 			if (value != null) {
@@ -484,7 +496,6 @@ public class PDFDoc extends TextDoc
 							"space-before attribute must has a float value");
 				}
 			}
-
 			// 设置段落后空间
 			value = attrs.get("space-after");
 			if (value != null) {
