@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.xml.sax.Attributes;
+
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -46,6 +48,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 
 
 /**
@@ -409,14 +412,16 @@ public class PDFDoc extends TextDoc
 		String value = attrs.get("super");
 		if (value != null && value.equalsIgnoreCase("true")) {
 			chunk.setTextRise(6.0f);
-			attrs.put("font-size", "8");
-			attrs.remove("font-style");
+			if (!attrs.containsKey("font-size")) {
+				attrs.put("font-size", "8");
+			}
 		}
 		value = attrs.get("sub");
 		if (value != null && value.equalsIgnoreCase("true")) {
 			chunk.setTextRise(-3.0f);
-			attrs.put("font-size", "8");
-			attrs.remove("font-style");
+			if (!attrs.containsKey("font-size")) {
+				attrs.put("font-size", "8");
+			}
 		}
 
 		String contents = text_chunk.getContents();
@@ -587,6 +592,36 @@ public class PDFDoc extends TextDoc
 			return;
 		}
 		document.newPage();
+	}
+
+	@Override
+	public void addHRule(Attributes attrs) {
+		try {
+			int width = 1;
+			int percent = 100;
+			String value = attrs.getValue("width");
+			if (value != null) {
+				try {
+					width = Integer.parseInt(value);
+				} catch (Exception ex) {
+					width = 1;
+				}
+			}
+			value = attrs.getValue("percent");
+			if (value != null) {
+				try {
+					percent = Integer.parseInt(value);
+				} catch (Exception ex) {
+					percent = 100;
+				}
+			}
+			LineSeparator line = new LineSeparator(width, percent, null,
+					Element.ALIGN_CENTER, 0f);
+			document.add(Chunk.NEWLINE);
+			document.add(line);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 }

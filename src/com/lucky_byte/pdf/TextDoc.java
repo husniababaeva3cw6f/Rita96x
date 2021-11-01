@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.xml.sax.Attributes;
+
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Rectangle;
@@ -75,5 +77,6 @@ public abstract class TextDoc
 			List<TextChunk> chunk_list)
 					throws DocumentException, IOException;
 	abstract public void newPage();
+	abstract public void addHRule(Attributes attrs);
 
 }

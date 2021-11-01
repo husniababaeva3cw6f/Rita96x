@@ -296,6 +296,9 @@ class TextDocHandler extends DefaultHandler
 			setupPage(attrs);
 			text_doc.newPage();
 			return;
+		} else if (qName.equalsIgnoreCase("hrule")) {
+			text_doc.addHRule(attrs);
+			return;
 		}
 		try{
 			prev_chunk = chunk_stack.peek();
@@ -388,12 +391,16 @@ class TextDocHandler extends DefaultHandler
 			contents_builder.append("\n");
 			return;
 		}
-		if (qName.equalsIgnoreCase("page")) {
-			return;
+
+		TextChunk chunk = null;
+		try {
+			chunk = chunk_stack.pop();
+		} catch (Exception ex) {
+		} finally {
+			if (chunk == null) {
+				return;
+			}
 		}
-
-		TextChunk chunk = chunk_stack.pop();
-
 		String contents = contents_builder.toString();
 		if (contents.length() > 0 ||
 				qName.equalsIgnoreCase("value") ||

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.simple.JSONObject;
+import org.xml.sax.Attributes;
+
 import com.itextpdf.text.DocumentException;
 
 /**
@@ -231,6 +233,11 @@ public class HTMLDoc extends TextDoc
 
 	@Override
 	public void newPage() {
+		writeStream("<hr/>");
+	}
+
+	@Override
+	public void addHRule(Attributes attrs) {
 		writeStream("<hr/>");
 	}
 
