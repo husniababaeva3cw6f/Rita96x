@@ -296,10 +296,16 @@ class TextDocHandler extends DefaultHandler
 			setupPage(attrs);
 			text_doc.newPage();
 			return;
-		} else if (qName.equalsIgnoreCase("hrule")) {
+		}
+		if (qName.equalsIgnoreCase("hrule")) {
 			text_doc.addHRule(attrs);
 			return;
 		}
+		if (qName.equalsIgnoreCase("img")) {
+			text_doc.addImage(attrs);
+			return;
+		}
+
 		try{
 			prev_chunk = chunk_stack.peek();
 			String contents = contents_builder.toString();

@@ -78,5 +78,6 @@ public abstract class TextDoc
 					throws DocumentException, IOException;
 	abstract public void newPage();
 	abstract public void addHRule(Attributes attrs);
+	abstract public void addImage(Attributes attrs);
 
 }

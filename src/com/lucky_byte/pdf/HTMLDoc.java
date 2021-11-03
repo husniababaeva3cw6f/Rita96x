@@ -241,4 +241,10 @@ public class HTMLDoc extends TextDoc
 		writeStream("<hr/>");
 	}
 
+	@Override
+	public void addImage(Attributes attrs) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

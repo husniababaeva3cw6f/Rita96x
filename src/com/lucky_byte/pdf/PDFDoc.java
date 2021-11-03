@@ -24,12 +24,14 @@ package com.lucky_byte.pdf;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.xml.sax.Attributes;
 
+import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -586,6 +588,7 @@ public class PDFDoc extends TextDoc
 	/**
 	 * 换页
 	 */
+	@Override
 	public void newPage() {
 		if (document == null && !document.isOpen()) {
 			System.err.println("Document unopen yet, please open it first.");
@@ -621,6 +624,21 @@ public class PDFDoc extends TextDoc
 			document.add(line);
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		}
+	}
+
+	@Override
+	public void addImage(Attributes attrs) {
+		String src = attrs.getValue("src");
+		if (src == null) {
+			System.err.println("img missing src attribyte.");
+			return;
+		}
+		try {
+			Image img = Image.getInstance(src);
+			document.add(img);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
