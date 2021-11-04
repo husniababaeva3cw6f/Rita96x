@@ -24,14 +24,13 @@ package com.lucky_byte.pdf;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.xml.sax.Attributes;
 
-import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -111,6 +110,7 @@ public class PDFDoc extends TextDoc
 
 	private Document document;
 	private PdfWriter writer;
+	private Map<String, Image> images;
 
 	private SplitCharacter split_character = new SplitCharacter() {
 		@Override
@@ -122,8 +122,9 @@ public class PDFDoc extends TextDoc
 
 	public PDFDoc(OutputStream pdf_stream) {
 		super(pdf_stream);
-		
+
 		block_defaults = new ArrayList<PDFBlockDefault>();
+		images = new HashMap<String, Image>();
 
 		// 默认的块属性，应用程序可以通过 setBlockDefault() 来修改这些属性
 		block_defaults.add(new PDFBlockDefault(BLOCK_TITLE,
@@ -635,8 +636,14 @@ public class PDFDoc extends TextDoc
 			return;
 		}
 		try {
-			Image img = Image.getInstance(src);
-			document.add(img);
+			Image img = images.get(src);
+			if (img == null) {
+				img = Image.getInstance(src);
+				images.put(src, img);
+			}
+			if (img != null) {
+				document.add(img);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
