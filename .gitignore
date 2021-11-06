@@ -1,3 +1,6 @@
 bin/
 tests/
 wiki/
+
+*.tar
+textpdf*.jar
