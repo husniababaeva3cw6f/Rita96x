@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Bundle-Name: LuckyByte.TextPDF
+Bundle-Version: 1.1.1
+Built-By: lucky-xiaohu
