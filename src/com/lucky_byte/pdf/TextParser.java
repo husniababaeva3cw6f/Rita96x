@@ -45,7 +45,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Rectangle;
 
@@ -70,27 +69,25 @@ public class TextParser
 
 	/**
 	 * 解析 XML 模板并生成输出文档
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws DocumentException 
-	 * @throws ParseException 
+	 * @throws Exception 
 	 */
 	public void parseAndGen(int doc_type, InputStream xml_stream,
 			InputStream json_stream, OutputStream pdf_stream,
-			List<URL> css_urls, List<URL> js_urls)
-				throws ParserConfigurationException,
-					SAXException, IOException, ParseException {
+			List<URL> css_urls, List<URL> js_urls) throws Exception {
 		this.xml_stream = xml_stream;
 		this.json_stream = json_stream;
 		this.out_stream = pdf_stream;
 		this.css_urls = css_urls;
 		this.js_urls = js_urls;
 
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(false);
-		SAXParser parser = factory.newSAXParser();
-		parser.parse(xml_stream, new TextDocHandler(this, doc_type));
+		try {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(false);
+			SAXParser parser = factory.newSAXParser();
+			parser.parse(xml_stream, new TextDocHandler(this, doc_type));
+		} catch (Exception ex) {
+			throw ex;
+		}
 	}
 
 	/**
@@ -98,6 +95,7 @@ public class TextParser
 	 * @param xml_stream
 	 * @param json_stream
 	 * @param pdf_stream
+	 * @throws Exception 
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
@@ -105,8 +103,7 @@ public class TextParser
 	 */
 	public void genPDF(InputStream xml_stream,
 			InputStream json_stream, OutputStream pdf_stream)
-				throws ParserConfigurationException,
-					SAXException, IOException, ParseException {
+					throws Exception {
 		parseAndGen(DOC_TYPE_PDF, xml_stream, json_stream,
 				pdf_stream, null, null);
 	}
@@ -115,6 +112,7 @@ public class TextParser
 	 * 解析 XML 模板并生成 HTML 文档
 	 * @param xml_stream
 	 * @param html_stream
+	 * @throws Exception 
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
@@ -122,9 +120,7 @@ public class TextParser
 	 */
 	public void genHTML(InputStream xml_stream,
 			InputStream json_stream, OutputStream html_stream,
-			List<URL> css_urls, List<URL> js_urls)
-				throws ParserConfigurationException,
-					SAXException, IOException, ParseException {
+			List<URL> css_urls, List<URL> js_urls) throws Exception {
 		parseAndGen(DOC_TYPE_HTML, xml_stream, json_stream,
 				html_stream, css_urls, js_urls);
 	}

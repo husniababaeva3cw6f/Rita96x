@@ -25,6 +25,7 @@ package com.lucky_byte.pdf;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,14 +51,15 @@ public class TextPDF
 	 * @param xmlfile XML 模板文件
 	 * @param jsonfile JSON 数据文件
 	 * @param pdffile 输出 PDF 文件
+	 * @throws Exception 
+	 * @throws FileNotFoundException 
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 * @throws ParseException 
 	 */
 	static public void gen(File xmlfile, File jsonfile, File pdffile)
-			throws ParserConfigurationException,
-					SAXException, IOException, ParseException {
+			throws FileNotFoundException, Exception {
 		if (xmlfile == null || jsonfile == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
@@ -72,14 +74,15 @@ public class TextPDF
 	 * @param xmlstr XML 模板字符串
 	 * @param jsonstr JSON 数据字符串
 	 * @param pdffile 输出 PDF 文件
+	 * @throws Exception 
+	 * @throws FileNotFoundException 
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 * @throws ParseException 
 	 */
 	static public void gen(String xmlstr, String jsonstr, File pdffile)
-			throws ParserConfigurationException,
-					SAXException, IOException, ParseException {
+			throws FileNotFoundException, Exception {
 		if (xmlstr == null || jsonstr == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
