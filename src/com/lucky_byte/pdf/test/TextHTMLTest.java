@@ -27,11 +27,13 @@ public class TextHTMLTest
 			js_urls.add(new URL(new URL("file:"), "jquery-1.11.3.min.js"));
 			js_urls.add(new URL(new URL("file:"), "textpdf.js"));
 
-			TextParser parser = new TextParser();
-			parser.genHTML(new FileInputStream(xmlfile),
+			TextParser parser = new TextParser(
+					new FileInputStream(xmlfile),
 					new FileInputStream(jsonfile),
-					new FileOutputStream(htmlfile),
-					css_urls, js_urls);
+					new FileOutputStream(htmlfile));
+			parser.setCSSURLs(css_urls);
+			parser.setJSURLs(js_urls);
+			parser.genHTML();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

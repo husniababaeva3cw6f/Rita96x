@@ -28,13 +28,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Stack;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -67,19 +65,28 @@ public class TextParser
 	List<URL> css_urls;
 	List<URL> js_urls;
 
+	public TextParser(InputStream xml_stream, InputStream json_stream,
+			OutputStream out_stream) {
+		this.xml_stream = xml_stream;
+		this.json_stream = json_stream;
+		this.out_stream = out_stream;
+		css_urls = new ArrayList<URL>();
+		js_urls = new ArrayList<URL>();
+	}
+
+	public void setCSSURLs(List<URL> css_urls) {
+		this.css_urls.addAll(css_urls);
+	}
+
+	public void setJSURLs(List<URL> js_urls) {
+		this.js_urls.addAll(js_urls);
+	}
+
 	/**
 	 * 解析 XML 模板并生成输出文档
 	 * @throws Exception 
 	 */
-	public void parseAndGen(int doc_type, InputStream xml_stream,
-			InputStream json_stream, OutputStream pdf_stream,
-			List<URL> css_urls, List<URL> js_urls) throws Exception {
-		this.xml_stream = xml_stream;
-		this.json_stream = json_stream;
-		this.out_stream = pdf_stream;
-		this.css_urls = css_urls;
-		this.js_urls = js_urls;
-
+	public void gen(int doc_type) throws Exception {
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setNamespaceAware(false);
@@ -92,37 +99,18 @@ public class TextParser
 
 	/**
 	 * 解析 XML 模板并生成 PDF 文档
-	 * @param xml_stream
-	 * @param json_stream
-	 * @param pdf_stream
 	 * @throws Exception 
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ParseException
 	 */
-	public void genPDF(InputStream xml_stream,
-			InputStream json_stream, OutputStream pdf_stream)
-					throws Exception {
-		parseAndGen(DOC_TYPE_PDF, xml_stream, json_stream,
-				pdf_stream, null, null);
+	public void genPDF() throws Exception {
+		gen(DOC_TYPE_PDF);
 	}
 
 	/**
 	 * 解析 XML 模板并生成 HTML 文档
-	 * @param xml_stream
-	 * @param html_stream
 	 * @throws Exception 
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ParseException 
 	 */
-	public void genHTML(InputStream xml_stream,
-			InputStream json_stream, OutputStream html_stream,
-			List<URL> css_urls, List<URL> js_urls) throws Exception {
-		parseAndGen(DOC_TYPE_HTML, xml_stream, json_stream,
-				html_stream, css_urls, js_urls);
+	public void genHTML() throws Exception {
+		gen(DOC_TYPE_HTML);
 	}
 }
 
@@ -172,27 +160,28 @@ class TextDocHandler extends DefaultHandler
 	@Override
 	public void startDocument() throws SAXException {
 		try {
-			InputStreamReader reader =
-					new InputStreamReader(parser.json_stream,
-							StandardCharsets.UTF_8);
-			JSONParser json_parser = new JSONParser();
-			json_object = (JSONObject) json_parser.parse(
-					new BufferedReader(reader));
-
-			if (text_doc instanceof PDFDoc) {
-				if (!json_object.containsKey("data")) {
-					System.err.println(
-							"JSON source missing 'data' key, please check!");
-				} else {
-					Object value = json_object.get("data");
-					if (!(value instanceof JSONObject)) {
-						System.err.println("JSON 'data' must be a object.");
+			if (parser.json_stream != null) {
+				InputStreamReader reader =
+						new InputStreamReader(parser.json_stream, "UTF-8");
+				JSONParser json_parser = new JSONParser();
+				json_object = (JSONObject) json_parser.parse(
+						new BufferedReader(reader));
+	
+				if (text_doc instanceof PDFDoc) {
+					if (!json_object.containsKey("data")) {
+						System.err.println(
+								"JSON source missing 'data' key, please check!");
 					} else {
-						json_data = (JSONObject) value;
+						Object value = json_object.get("data");
+						if (!(value instanceof JSONObject)) {
+							System.err.println("JSON 'data' must be a object.");
+						} else {
+							json_data = (JSONObject) value;
+						}
 					}
+				} else if (text_doc instanceof HTMLDoc) {
+					((HTMLDoc) text_doc).setJSONObject(json_object);
 				}
-			} else if (text_doc instanceof HTMLDoc) {
-				((HTMLDoc) text_doc).setJSONObject(json_object);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

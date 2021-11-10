@@ -34,11 +34,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.json.simple.parser.ParseException;
-import org.xml.sax.SAXException;
-
 /**
  * 文本转 PDF
  * 
@@ -53,20 +48,18 @@ public class TextPDF
 	 * @param pdffile 输出 PDF 文件
 	 * @throws Exception 
 	 * @throws FileNotFoundException 
-	 * @throws IOException 
-	 * @throws SAXException 
-	 * @throws ParserConfigurationException 
-	 * @throws ParseException 
 	 */
 	static public void gen(File xmlfile, File jsonfile, File pdffile)
 			throws FileNotFoundException, Exception {
 		if (xmlfile == null || jsonfile == null || pdffile == null) {
 			throw new IllegalArgumentException();
 		}
-		TextParser parser = new TextParser();
-		parser.genPDF(new FileInputStream(xmlfile),
+
+		TextParser parser = new TextParser(
+				new FileInputStream(xmlfile),
 				new FileInputStream(jsonfile),
 				new FileOutputStream(pdffile));
+		parser.genPDF();
 	}
 
 	/**
@@ -76,10 +69,6 @@ public class TextPDF
 	 * @param pdffile 输出 PDF 文件
 	 * @throws Exception 
 	 * @throws FileNotFoundException 
-	 * @throws IOException 
-	 * @throws SAXException 
-	 * @throws ParserConfigurationException 
-	 * @throws ParseException 
 	 */
 	static public void gen(String xmlstr, String jsonstr, File pdffile)
 			throws FileNotFoundException, Exception {
@@ -88,10 +77,12 @@ public class TextPDF
 		}
 		byte[] xml_bytes = xmlstr.getBytes(StandardCharsets.UTF_8);
 		byte[] json_bytes = jsonstr.getBytes(StandardCharsets.UTF_8);
-		TextParser parser = new TextParser();
-		parser.genPDF(new ByteArrayInputStream(xml_bytes),
+
+		TextParser parser = new TextParser(
+				new ByteArrayInputStream(xml_bytes),
 				new ByteArrayInputStream(json_bytes),
 				new FileOutputStream(pdffile));
+		parser.genPDF();
 	}
 
 	/**
@@ -101,7 +92,8 @@ public class TextPDF
 	 */
 	public static void main(String[] args) throws IOException {
 		List<String> args2 = new ArrayList<String>();
-		String pdf_fname = null;
+		String out_fname = null;
+		String out_format = "pdf";
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-o")) {
@@ -109,9 +101,20 @@ public class TextPDF
 					System.err.println("'-o' option require a argument");
 					return;
 				}
-				pdf_fname = args[i + 1];
+				out_fname = args[i + 1];
 				i++;
-				continue;
+			} else if (args[i].equals("-f")) {
+				if (i >= args.length - 1) {
+					System.err.println("'-f' option require a argument");
+					return;
+				}
+				out_format = args[i + 1];
+				if (!out_format.equalsIgnoreCase("pdf") &&
+						!out_format.equalsIgnoreCase("html")) {
+					System.err.println("'-f' option require 'pdf' or 'html'");
+					return;
+				}
+				i++;
 			} else if (args[i].equals("-v")) {
 				System.out.println("TextPDF version " + Version.VERSION);
 				System.out.println("\nCopyright (c) 2015 Lucky Byte, Inc.\n");
@@ -121,14 +124,15 @@ public class TextPDF
 			}
 		}
 
-		if (args2.size() < 2) {
+		if (args2.size() < 1) {
 			System.err.println("Argument missing...");
 			System.err.println();
 			System.err.println("Usage:");
 			System.err.println("  java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]");
 			System.err.println("\nOptions:");
-			System.err.println("  -o filename:  Output pdf file name");
-			System.err.println("  -v:           Print version");
+			System.err.println("  -o filename:    Output pdf file name");
+			System.err.println("  -f [pdf|html}:  Output file format");
+			System.err.println("  -v:             Print version");
 			System.err.println();
 			return;
 		}
@@ -137,17 +141,20 @@ public class TextPDF
 			System.err.println(xmlfile.getAbsolutePath() + " not found.");
 			return;
 		}
-		File jsonfile = new File(args2.get(1));
-		if (!jsonfile.exists()) {
-			System.err.println(jsonfile.getAbsolutePath() + " not found.");
-			return;
+		File jsonfile = null;
+		if (args2.size() > 1) {
+			jsonfile = new File(args2.get(1));
+			if (!jsonfile.exists()) {
+				System.err.println(jsonfile.getAbsolutePath() + " not found.");
+				return;
+			}
 		}
-		if (pdf_fname == null) {
-			pdf_fname = args2.get(0) + ".pdf";
+		if (out_fname == null) {
+			out_fname = args2.get(0) + "." + out_format;
 		}
-		File pdffile = new File(pdf_fname);
-		if (pdffile.exists()) {
-			System.err.println(pdffile.getAbsolutePath() + " already exists.");
+		File outfile = new File(out_fname);
+		if (outfile.exists()) {
+			System.err.println(outfile.getAbsolutePath() + " already exists.");
 			return;
 		}
 
@@ -165,8 +172,17 @@ public class TextPDF
 				reader.read(doc_stream, xml_stream, null);
 				xmlfile = tmpfile;
 			}
-			TextPDF.gen(xmlfile, jsonfile, pdffile);
-
+			InputStream json_stream = null;
+			if (jsonfile != null) {
+				json_stream = new FileInputStream(jsonfile);
+			}
+			TextParser parser = new TextParser(new FileInputStream(xmlfile),
+					json_stream, new FileOutputStream(outfile));
+			if (out_format.equalsIgnoreCase("pdf")) {
+				parser.genPDF();
+			} else {
+				parser.genHTML();
+			}
 			if (args2.get(0).endsWith(".doc")) {	// 删除临时文件
 				xmlfile.delete();
 			}

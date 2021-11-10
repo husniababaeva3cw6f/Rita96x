@@ -629,12 +629,16 @@ public class PDFDoc extends TextDoc
 		}
 	}
 
+	/**
+	 * 添加一个图片
+	 * @param attrs
+	 */
 	@Override
 	public void addImage(Attributes attrs) {
 		try {
 			String src = attrs.getValue("src");
 			if (src == null) {
-				System.err.println("img missing src attribyte.");
+				System.err.println("img missing src attribute.");
 				return;
 			}
 			File file = new File(src);
