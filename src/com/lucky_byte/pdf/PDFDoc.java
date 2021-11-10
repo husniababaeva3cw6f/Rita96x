@@ -22,6 +22,7 @@
  */
 package com.lucky_byte.pdf;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -630,12 +631,17 @@ public class PDFDoc extends TextDoc
 
 	@Override
 	public void addImage(Attributes attrs) {
-		String src = attrs.getValue("src");
-		if (src == null) {
-			System.err.println("img missing src attribyte.");
-			return;
-		}
 		try {
+			String src = attrs.getValue("src");
+			if (src == null) {
+				System.err.println("img missing src attribyte.");
+				return;
+			}
+			File file = new File(src);
+			if (file.exists()) {
+				System.err.println(src + " not found.");
+				return;
+			}
 			Image img = images.get(src);
 			if (img == null) {
 				img = Image.getInstance(src);
