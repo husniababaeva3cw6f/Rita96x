@@ -135,4 +135,20 @@ public class Util
 		}
 		return null;
 	}
+
+	public static String escapeHTMLString(String string) {
+		if (string == null) {
+			return null;
+		}
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < string.length(); i++) {
+			String escape = escapeHTMLChars(string.charAt(i));
+			if (escape != null) {
+				builder.append(escape);
+			} else {
+				builder.append(string.charAt(i));
+			}
+		}
+		return builder.toString();
+	}
 }

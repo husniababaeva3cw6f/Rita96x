@@ -3,7 +3,6 @@ package com.lucky_byte.pdf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +18,8 @@ public class HTMLDoc extends TextDoc
 {
 	private boolean is_open = false;
 	private JSONObject json_object;
-	private List<URL> css_urls;
-	private List<URL> js_urls;
+	private List<String> css_paths;
+	private List<String> js_paths;
 
 	private String html_open = ""
 			+ "<!DOCTYPE html>\n"
@@ -46,9 +45,9 @@ public class HTMLDoc extends TextDoc
 		this.json_object = json_object;
 	}
 
-	public void setURL(List<URL> css_urls, List<URL> js_urls) {
-		this.css_urls = css_urls;
-		this.js_urls = js_urls;
+	public void setLinkPaths(List<String> css_paths, List<String> js_paths) {
+		this.css_paths = css_paths;
+		this.js_paths = js_paths;
 	}
 
 	private boolean writeStream(String string) {
@@ -74,29 +73,36 @@ public class HTMLDoc extends TextDoc
 				Object value = json_object.get("title");
 				if (value instanceof String) {
 					html_open = html_open.replace("__TITLE__",
-							(CharSequence) value);
+							Util.escapeHTMLString((String) value));
 				}
 			}
 		}
-		if (css_urls != null) {
+		html_open = html_open.replace("__TITLE__", "");
+
+		if (css_paths != null) {
 			StringBuilder builder = new StringBuilder();
-			for (URL url : css_urls) {
+			for (String path : css_paths) {
 				builder.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"");
-				builder.append(url.getPath());
+				builder.append(Util.escapeHTMLString(path));
 				builder.append("\"/>\n");
 			}
-			html_open = html_open.replace(
-					"__CSS_URL__", builder.toString().trim());
+			html_open = html_open.replace("__CSS_URL__",
+					builder.toString().trim());
+		} else {
+			html_open = html_open.replace("__CSS_URL__", "");
 		}
-		if (js_urls != null) {
+
+		if (js_paths != null) {
 			StringBuilder builder = new StringBuilder();
-			for (URL url : js_urls) {
+			for (String path : js_paths) {
 				builder.append("    <script src=\"");
-				builder.append(url.getPath());
+				builder.append(Util.escapeHTMLString(path));
 				builder.append("\"></script>\n");
 			}
-			html_open = html_open.replace(
-					"__JS_URL__", builder.toString().trim());
+			html_open = html_open.replace("__JS_URL__",
+					builder.toString().trim());
+		} else {
+			html_open = html_open.replace("__JS_URL__", "");
 		}
 		is_open = true;
 		return writeStream(html_open);
@@ -142,17 +148,17 @@ public class HTMLDoc extends TextDoc
 				for (int i = 0; i < styles.length; i++) {
 					String style_name = styles[i].trim();
 					if (style_name.equalsIgnoreCase("bold")) {
-						style_string.append("font-weight: bold;");
+						style_string.append("font-weight: bold; ");
 					} else if (style_name.equalsIgnoreCase("italic")) {
-						style_string.append("font-style: italic;");
+						style_string.append("font-style: italic; ");
 					} else if (style_name.equalsIgnoreCase("underline")) {
-						style_string.append("font-decoration: underline;");
+						style_string.append("font-decoration: underline; ");
 					}
 				}
 			} else if (block_element && key.equalsIgnoreCase("indent")) {
-				style_string.append("text-indent: " + chunk_attrs.get(key) + "px;");
+				style_string.append("text-indent: " + chunk_attrs.get(key) + "px; ");
 			} else if (block_element && key.equalsIgnoreCase("align")) {
-				style_string.append("text-align: " + chunk_attrs.get(key) + ";");
+				style_string.append("text-align: " + chunk_attrs.get(key) + "; ");
 			}
 		}
 		if (style_string.toString().length() > 0) {
@@ -184,7 +190,7 @@ public class HTMLDoc extends TextDoc
 		writeStream("<input type=\"text\"");
 		String value = attrs.get("id");
 		if (value != null && value.length() > 0) {
-			writeStream("id=\"" + value + "\" name=\"" + value + "\"");
+			writeStream(" id=\"" + value + "\" name=\"" + value + "\"");
 		}
 		value = attrs.get("minlen");
 		if (value != null && value.length() > 0) {

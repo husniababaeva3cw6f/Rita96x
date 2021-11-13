@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.List;
@@ -62,24 +61,24 @@ public class TextParser
 	InputStream xml_stream;
 	InputStream json_stream;
 	OutputStream out_stream;
-	List<URL> css_urls;
-	List<URL> js_urls;
+	List<String> css_paths;
+	List<String> js_paths;
 
 	public TextParser(InputStream xml_stream, InputStream json_stream,
 			OutputStream out_stream) {
 		this.xml_stream = xml_stream;
 		this.json_stream = json_stream;
 		this.out_stream = out_stream;
-		css_urls = new ArrayList<URL>();
-		js_urls = new ArrayList<URL>();
+		css_paths = new ArrayList<String>();
+		js_paths = new ArrayList<String>();
 	}
 
-	public void setCSSURLs(List<URL> css_urls) {
-		this.css_urls.addAll(css_urls);
+	public void setCSSLinks(List<String> css_urls) {
+		this.css_paths.addAll(css_urls);
 	}
 
-	public void setJSURLs(List<URL> js_urls) {
-		this.js_urls.addAll(js_urls);
+	public void setJSLinks(List<String> js_urls) {
+		this.js_paths.addAll(js_urls);
 	}
 
 	/**
@@ -147,7 +146,8 @@ class TextDocHandler extends DefaultHandler
 			break;
 		case TextParser.DOC_TYPE_HTML:
 			text_doc = new HTMLDoc(parser.out_stream);
-			((HTMLDoc) text_doc).setURL(parser.css_urls, parser.js_urls);
+			((HTMLDoc) text_doc).setLinkPaths(
+					parser.css_paths, parser.js_paths);
 			break;
 		default:
 			throw new IOException("Document type unsupported.");
