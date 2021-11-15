@@ -249,8 +249,12 @@ public class HTMLDoc extends TextDoc
 
 	@Override
 	public void addImage(Attributes attrs) {
-		// TODO Auto-generated method stub
-		
+		String value = attrs.getValue("src");
+		if (value == null) {
+			System.err.println("img missing src attribute.");
+			return;
+		}
+		writeStream("<img src=\"" + Util.escapeHTMLString(value) + "\"/>");
 	}
 
 }
