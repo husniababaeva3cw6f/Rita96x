@@ -37,6 +37,7 @@ public class HTMLDoc extends TextDoc
 
 	private String html_close = "  </body>\n</html>\n";
 
+
 	public HTMLDoc(OutputStream out_stream) {
 		super(out_stream);
 	}
@@ -108,9 +109,21 @@ public class HTMLDoc extends TextDoc
 		return writeStream(html_open);
 	}
 
+	
+	private void addToolbar() {
+		writeStream("    <div class=\"toolbar\">\n");
+		writeStream("      <button class=\"button-warning\" id=\"check-button\">检  查</button>\n");
+		writeStream("      <button class=\"button-success\" id=\"save-button\">保  存</button>\n");
+		writeStream("      <button class=\"button-secondary\" id=\"prev-button\">上一项</button>\n");
+		writeStream("      <button class=\"button-secondary\" id=\"next-button\">下一项</button>\n");
+		writeStream("      <button class=\"button-error\" id=\"close-button\">关  闭</button>\n");
+		writeStream("    </div>\n");
+	}
+
 	@Override
 	public void close() {
 		if (is_open && out_stream != null) {
+			addToolbar();
 			writeStream(html_close);
 		}
 	}
@@ -239,12 +252,12 @@ public class HTMLDoc extends TextDoc
 
 	@Override
 	public void newPage() {
-		writeStream("<hr/>");
+		writeStream("    <hr/>\n");
 	}
 
 	@Override
 	public void addHRule(Attributes attrs) {
-		writeStream("<hr/>");
+		writeStream("    <hr/>\n");
 	}
 
 	@Override

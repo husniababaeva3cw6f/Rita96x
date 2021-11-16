@@ -22,12 +22,12 @@
  */
 body {
     font-size:16px;
+    line-height: 140%;
     margin: 40px;
-    line-height: 150%;
+    margin-bottom: 120px;
 }
 
 h1 {
-  text-align: center;
 }
 
 input {
@@ -37,9 +37,47 @@ input {
     margin-right: 5px;
     color: blue;
     border: 0;
-    border-bottom: solid 2px #00f;
     outline: none;
+    border-bottom: solid 1px #00f;
 }
 
 .title {
+    text-align: center;
+}
+
+.toolbar {
+    width: 100%;
+    height: 50px;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    background: #eee;
+    border-top: thin solid #ddd;
+    text-align: right;
+}
+
+.button-success, .button-error, .button-warning, .button-secondary {
+    font-size: 16px;
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 10px;
+}
+.button-success {
+    background: rgb(28, 184, 65);
+}
+.button-error {
+    background: rgb(202, 60, 60);
+}
+.button-warning {
+    background: rgb(223, 117, 20);
+}
+.button-secondary {
+    background: rgb(66, 184, 221);
+}
+#close-button {
+    margin-right: 20px;
+    margin-left: 30px;
 }

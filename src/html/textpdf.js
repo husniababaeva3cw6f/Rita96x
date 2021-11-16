@@ -20,4 +20,78 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+var focus_input;
+
+
+function onSaveButtonClick()
+{
+}
+
+function onCheckButtonClick()
+{
+  var inputs = $(':input[type=text]');
+  var total = inputs.length;
+  var empty = 0;
+
+  inputs.each(function(index, elem) {
+    if ($(this).val() == "") {
+      empty++;
+    }
+  });
+
+  if (empty > 0) {
+    var msg = "Total: " + total + "\n";
+    msg += "Remains: " + empty + "\n";
+    alert(msg);
+  }
+}
+
+function onPrevButtonClick()
+{
+  if (!focus_input) {
+    $(':input[type=text]').first().focus();
+    return;
+  }
+  var inputs = $(':input[type=text]');
+  var index = inputs.index(focus_input);
+  if (index > 0) {
+    inputs.eq(index - 1).focus();
+  } else {
+    focus_input.focus();
+  }
+}
+
+function onNextButtonClick()
+{
+  if (!focus_input) {
+    $(':input[type=text]').first().focus();
+    return;
+  }
+  var inputs = $(':input[type=text]');
+  var index = inputs.index(focus_input);
+  if (inputs.length > index + 1) {
+    inputs.eq(index + 1).focus();
+  } else {
+    focus_input.focus();
+  }
+}
+
+
+function onCloseButtonClick()
+{
+  window.close();
+}
+
+
+$(function() {
+  $('#save-button').click(onSaveButtonClick);
+  $('#check-button').click(onCheckButtonClick);
+  $('#prev-button').click(onPrevButtonClick);
+  $('#next-button').click(onNextButtonClick);
+  $('#close-button').click(onCloseButtonClick);
+
+  $('input[type=text]').focus(function() {
+    focus_input = $(this);
+  });
+});
 
