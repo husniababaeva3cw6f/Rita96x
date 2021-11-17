@@ -63,6 +63,7 @@ public class TextParser
 	OutputStream out_stream;
 	List<String> css_paths;
 	List<String> js_paths;
+	String out_encoding = null;
 
 	public TextParser(InputStream xml_stream, InputStream json_stream,
 			OutputStream out_stream) {
@@ -79,6 +80,10 @@ public class TextParser
 
 	public void setJSLinks(List<String> js_urls) {
 		this.js_paths.addAll(js_urls);
+	}
+
+	public void setOutputEncoding(String encoding) {
+		this.out_encoding = encoding;
 	}
 
 	/**
@@ -151,6 +156,10 @@ class TextDocHandler extends DefaultHandler
 			break;
 		default:
 			throw new IOException("Document type unsupported.");
+		}
+
+		if (parser.out_encoding != null) {
+			text_doc.setEncoding(parser.out_encoding);
 		}
 	}
 

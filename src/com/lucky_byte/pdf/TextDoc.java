@@ -43,6 +43,7 @@ public abstract class TextDoc
 	protected int page_margin_right = 50;
 	protected int page_margin_top = 50;
 	protected int page_margin_bottom = 50;
+	protected String encoding = "UTF-8";
 
 	public TextDoc(OutputStream out_stream) {
 		this.out_stream = out_stream;
@@ -70,6 +71,14 @@ public abstract class TextDoc
 		page_margin_bottom = bottom;
 	}
 
+	/**
+	 * 设置输出文件编码
+	 * @param enc 编码
+	 */
+	public void setEncoding(String enc) {
+		this.encoding = enc;
+	}
+
 	abstract public boolean open();
 	abstract public void close();
 	abstract public boolean isOpen();
@@ -79,5 +88,4 @@ public abstract class TextDoc
 	abstract public void newPage();
 	abstract public void addHRule(Attributes attrs);
 	abstract public void addImage(Attributes attrs);
-
 }

@@ -30,6 +30,7 @@ public class HTMLDoc extends TextDoc
 			+ "    <meta name=\"generator\" content=\"TextPDF\" />\n"
 			+ "    <meta name=\"description\" content=\"TextPDF Editor\" />\n"
 			+ "    <meta name=\"keywords\" content=\"TextPDF,PDF,Template\" />\n"
+			+ "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=__ENCODING__\">\n"
 			+ "    __CSS_URL__\n"
 			+ "    __JS_URL__\n"
 			+ "  </head>\n"
@@ -53,7 +54,7 @@ public class HTMLDoc extends TextDoc
 
 	private boolean writeStream(String string) {
 		try {
-			out_stream.write(string.getBytes("UTF-8"));
+			out_stream.write(string.getBytes(encoding));
 			return true;
 		} catch (UnsupportedEncodingException e) {
 			System.err.println("Unsupported encoding.");
@@ -79,6 +80,8 @@ public class HTMLDoc extends TextDoc
 			}
 		}
 		html_open = html_open.replace("__TITLE__", "");
+
+		html_open = html_open.replace("__ENCODING__", encoding);
 
 		if (css_paths != null) {
 			StringBuilder builder = new StringBuilder();
