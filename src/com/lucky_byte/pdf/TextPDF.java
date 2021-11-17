@@ -94,6 +94,7 @@ public class TextPDF
 		List<String> args2 = new ArrayList<String>();
 		String out_fname = null;
 		String out_format = "pdf";
+		String out_encoding = null;
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-o")) {
@@ -115,6 +116,13 @@ public class TextPDF
 					return;
 				}
 				i++;
+			} else if (args[i].equals("-e")) {
+				if (i >= args.length - 1) {
+					System.err.println("'-e' option require a argument");
+					return;
+				}
+				out_encoding = args[i + 1];
+				i++;
 			} else if (args[i].equals("-v")) {
 				System.out.println("TextPDF version " + Version.VERSION);
 				System.out.println("\nCopyright (c) 2015 Lucky Byte, Inc.\n");
@@ -130,8 +138,9 @@ public class TextPDF
 			System.err.println("Usage:");
 			System.err.println("  java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]");
 			System.err.println("\nOptions:");
-			System.err.println("  -o filename:    Output pdf file name");
-			System.err.println("  -f [pdf|html}:  Output file format");
+			System.err.println("  -o filename:    Output file name");
+			System.err.println("  -f [pdf|html]:  Output file format");
+			System.err.println("  -e encoding:    Output file encoding");
 			System.err.println("  -v:             Print version");
 			System.err.println();
 			return;
@@ -176,8 +185,14 @@ public class TextPDF
 			if (jsonfile != null) {
 				json_stream = new FileInputStream(jsonfile);
 			}
-			TextParser parser = new TextParser(new FileInputStream(xmlfile),
-					json_stream, new FileOutputStream(outfile));
+			TextParser parser = new TextParser(
+					new FileInputStream(xmlfile),
+					json_stream,
+					new FileOutputStream(outfile));
+			if (out_encoding != null) {
+				parser.setOutputEncoding(out_encoding);
+			}
+
 			if (out_format.equalsIgnoreCase("pdf")) {
 				parser.genPDF();
 			} else {
