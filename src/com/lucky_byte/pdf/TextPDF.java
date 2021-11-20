@@ -48,6 +48,7 @@ public class TextPDF
 	 * @param pdffile 输出 PDF 文件
 	 * @throws Exception 
 	 * @throws FileNotFoundException 
+	 * @deprecated
 	 */
 	static public void gen(File xmlfile, File jsonfile, File pdffile)
 			throws FileNotFoundException, Exception {
@@ -69,6 +70,7 @@ public class TextPDF
 	 * @param pdffile 输出 PDF 文件
 	 * @throws Exception 
 	 * @throws FileNotFoundException 
+	 * @deprecated
 	 */
 	static public void gen(String xmlstr, String jsonstr, File pdffile)
 			throws FileNotFoundException, Exception {
@@ -95,6 +97,9 @@ public class TextPDF
 		String out_fname = null;
 		String out_format = "pdf";
 		String out_encoding = null;
+		String css_paths = null;
+		String js_paths = null;
+		boolean print_help = false;
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-o")) {
@@ -123,6 +128,22 @@ public class TextPDF
 				}
 				out_encoding = args[i + 1];
 				i++;
+			} else if (args[i].equals("-css")) {
+				if (i >= args.length - 1) {
+					System.err.println("'-css' option require a argument");
+					return;
+				}
+				css_paths = args[i + 1];
+				i++;
+			} else if (args[i].equals("-js")) {
+				if (i >= args.length - 1) {
+					System.err.println("'-js' option require a argument");
+					return;
+				}
+				js_paths = args[i + 1];
+				i++;
+			} else if (args[i].equals("-h")) {
+				print_help = true;
 			} else if (args[i].equals("-v")) {
 				System.out.println("TextPDF version " + Version.VERSION);
 				System.out.println("\nCopyright (c) 2015 Lucky Byte, Inc.\n");
@@ -132,7 +153,7 @@ public class TextPDF
 			}
 		}
 
-		if (args2.size() < 1) {
+		if (print_help || args2.size() < 1) {
 			System.err.println("Argument missing...");
 			System.err.println();
 			System.err.println("Usage:");
@@ -141,7 +162,10 @@ public class TextPDF
 			System.err.println("  -o filename:    Output file name");
 			System.err.println("  -f [pdf|html]:  Output file format");
 			System.err.println("  -e encoding:    Output file encoding");
+			System.err.println("  -css path1,...: Add CSS link to output file");
+			System.err.println("  -js path1,...:  Add JS link to output file");
 			System.err.println("  -v:             Print version");
+			System.err.println("  -h:             Print this information");
 			System.err.println();
 			return;
 		}
@@ -191,6 +215,12 @@ public class TextPDF
 					new FileOutputStream(outfile));
 			if (out_encoding != null) {
 				parser.setOutputEncoding(out_encoding);
+			}
+			if (css_paths != null) {
+				parser.setCSSLinks(css_paths.split(","));
+			}
+			if (js_paths != null) {
+				parser.setJSLinks(js_paths.split(","));
 			}
 
 			if (out_format.equalsIgnoreCase("pdf")) {

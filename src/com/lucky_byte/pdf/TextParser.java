@@ -74,12 +74,28 @@ public class TextParser
 		js_paths = new ArrayList<String>();
 	}
 
-	public void setCSSLinks(List<String> css_urls) {
-		this.css_paths.addAll(css_urls);
+	public void setCSSLinks(List<String> css_paths) {
+		this.css_paths.addAll(css_paths);
 	}
 
-	public void setJSLinks(List<String> js_urls) {
-		this.js_paths.addAll(js_urls);
+	public void setCSSLinks(String[] css_paths) {
+		if (css_paths != null) {
+			for (String path : css_paths) {
+				this.css_paths.add(path);
+			}
+		}
+	}
+
+	public void setJSLinks(List<String> js_paths) {
+		this.js_paths.addAll(js_paths);
+	}
+
+	public void setJSLinks(String[] js_paths) {
+		if (js_paths != null) {
+			for (String path : js_paths) {
+				this.js_paths.add(path);
+			}
+		}
 	}
 
 	public void setOutputEncoding(String encoding) {
