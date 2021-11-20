@@ -64,11 +64,18 @@ TextPDF 可以将`.doc`文件转换成 TextPDF 的 XML 模板文件，对于`.do
 
 ### 命令行用法
 
-```sh
-java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]
+```
+Usage:
+  java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]
 
 Options:
-  -o filename:  Output pdf file name
+  -o filename    : Output file name
+  -f [pdf|html]  : Output file format
+  -e encoding    : Output file encoding
+  -css path1,... : Add CSS link to output file
+  -js path1,...  : Add JS link to output file
+  -v             : Print version
+  -h             : Print this information
 ```
 
 `xmlfile`|`docfile` 作为文档模板输入源，`jsonfile` 为数据输入源，默认的 PDF 输出文件名称和 `xmlfile` 同名，后缀为 `.pdf`，可以通过 `-o`选项改变输出文件名称。
@@ -90,3 +97,5 @@ try {
     ex.printStackTrace();
 }
 ```
+
+> 从 0.3 开始，`TextPDF.gen`方法被废弃(因为其不能提供额外的选项)，应该直接使用 TextParser 对象，请参考`TextPDF.java`中的`main`函数。
