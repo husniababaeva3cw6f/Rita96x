@@ -154,18 +154,20 @@ public class TextPDF
 		}
 
 		if (print_help || args2.size() < 1) {
-			System.err.println("Argument missing...");
-			System.err.println();
+			if (!print_help) {
+				System.err.println("Argument missing...");
+				System.err.println();
+			}
 			System.err.println("Usage:");
 			System.err.println("  java -jar textpdf.jar [OPTION] <xmlfile|docfile> [jsonfile]");
 			System.err.println("\nOptions:");
-			System.err.println("  -o filename:    Output file name");
-			System.err.println("  -f [pdf|html]:  Output file format");
-			System.err.println("  -e encoding:    Output file encoding");
-			System.err.println("  -css path1,...: Add CSS link to output file");
-			System.err.println("  -js path1,...:  Add JS link to output file");
-			System.err.println("  -v:             Print version");
-			System.err.println("  -h:             Print this information");
+			System.err.println("  -o filename    : Output file name");
+			System.err.println("  -f [pdf|html]  : Output file format");
+			System.err.println("  -e encoding    : Output file encoding");
+			System.err.println("  -css path1,... : Add CSS link to output file");
+			System.err.println("  -js path1,...  : Add JS link to output file");
+			System.err.println("  -v             : Print version");
+			System.err.println("  -h             : Print this information");
 			System.err.println();
 			return;
 		}
