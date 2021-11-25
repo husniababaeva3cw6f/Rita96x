@@ -20,6 +20,8 @@ public class HTMLDoc extends TextDoc
 	private JSONObject json_object;
 	private List<String> css_paths;
 	private List<String> js_paths;
+	private String declare = null;
+	private String extra = null;
 
 	private String html_open = ""
 			+ "<!DOCTYPE html>\n"
@@ -28,7 +30,7 @@ public class HTMLDoc extends TextDoc
 			+ "    <title>__TITLE__</title>\n"
 			+ "    <meta name=\"author\" content=\"Lucky Byte, Inc.\"/>\n"
 			+ "    <meta name=\"generator\" content=\"TextPDF\" />\n"
-			+ "    <meta name=\"description\" content=\"TextPDF Editor\" />\n"
+			+ "    <meta name=\"description\" content=\"TextPDF HTML Editor\" />\n"
 			+ "    <meta name=\"keywords\" content=\"TextPDF,PDF,Template\" />\n"
 			+ "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=__ENCODING__\">\n"
 			+ "    __CSS_URL__\n"
@@ -52,6 +54,14 @@ public class HTMLDoc extends TextDoc
 		this.js_paths = js_paths;
 	}
 
+	public void setDeclare(String declare) {
+		
+	}
+
+	public void setExtra(String extra) {
+		
+	}
+
 	private boolean writeStream(String string) {
 		try {
 			out_stream.write(string.getBytes(encoding));
@@ -65,11 +75,13 @@ public class HTMLDoc extends TextDoc
 		}
 	}
 
-	@Override
-	public boolean open() {
-		if (out_stream == null)
-			return false;
+	private void substituteDeclare() {
+		if (declare != null) {
+			html_open = html_open.replace("<!DOCTYPE html>", declare);
+		}
+	}
 
+	private void substituteTitle() {
 		if (json_object != null) {
 			if (json_object.containsKey("title")) {
 				Object value = json_object.get("title");
@@ -80,9 +92,9 @@ public class HTMLDoc extends TextDoc
 			}
 		}
 		html_open = html_open.replace("__TITLE__", "");
+	}
 
-		html_open = html_open.replace("__ENCODING__", encoding);
-
+	private void substituteCSSLinks() {
 		if (css_paths != null) {
 			StringBuilder builder = new StringBuilder();
 			for (String path : css_paths) {
@@ -95,7 +107,9 @@ public class HTMLDoc extends TextDoc
 		} else {
 			html_open = html_open.replace("__CSS_URL__", "");
 		}
+	}
 
+	private void substituteJSLinks() {
 		if (js_paths != null) {
 			StringBuilder builder = new StringBuilder();
 			for (String path : js_paths) {
@@ -108,6 +122,19 @@ public class HTMLDoc extends TextDoc
 		} else {
 			html_open = html_open.replace("__JS_URL__", "");
 		}
+	}
+
+	@Override
+	public boolean open() {
+		if (out_stream == null)
+			return false;
+
+		substituteDeclare();
+		substituteTitle();
+		html_open = html_open.replace("__ENCODING__", encoding);
+		substituteCSSLinks();
+		substituteJSLinks();
+
 		is_open = true;
 		return writeStream(html_open);
 	}
@@ -126,7 +153,9 @@ public class HTMLDoc extends TextDoc
 	@Override
 	public void close() {
 		if (is_open && out_stream != null) {
-			addToolbar();
+			if (extra != null) {
+				writeStream(extra);
+			}
 			writeStream(html_close);
 		}
 	}

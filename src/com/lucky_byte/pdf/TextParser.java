@@ -64,6 +64,8 @@ public class TextParser
 	List<String> css_paths;
 	List<String> js_paths;
 	String out_encoding = null;
+	String html_declare = null;
+	String html_extra = null;
 
 	public TextParser(InputStream xml_stream, InputStream json_stream,
 			OutputStream out_stream) {
@@ -74,10 +76,18 @@ public class TextParser
 		js_paths = new ArrayList<String>();
 	}
 
+	/**
+	 * 在输出的 html 文件中添加 css 链接
+	 * @param css_paths
+	 */
 	public void setCSSLinks(List<String> css_paths) {
 		this.css_paths.addAll(css_paths);
 	}
 
+	/**
+	 * 在输出的 html 文件中添加 css 链接
+	 * @param css_paths
+	 */
 	public void setCSSLinks(String[] css_paths) {
 		if (css_paths != null) {
 			for (String path : css_paths) {
@@ -86,10 +96,18 @@ public class TextParser
 		}
 	}
 
+	/**
+	 * 在输出的 html 文件中增加 js 链接
+	 * @param js_paths
+	 */
 	public void setJSLinks(List<String> js_paths) {
 		this.js_paths.addAll(js_paths);
 	}
 
+	/**
+	 * 在输出的 html 文件中增加 js 链接
+	 * @param js_paths
+	 */
 	public void setJSLinks(String[] js_paths) {
 		if (js_paths != null) {
 			for (String path : js_paths) {
@@ -98,8 +116,28 @@ public class TextParser
 		}
 	}
 
+	/**
+	 * 设置 html 输出的文件编码
+	 * @param encoding
+	 */
 	public void setOutputEncoding(String encoding) {
 		this.out_encoding = encoding;
+	}
+
+	/**
+	 * 设置 html 文件的声明，默认为 <!DOCTYPE html>
+	 * @param declare
+	 */
+	public void setHtmlDeclare(String declare) {
+		this.html_declare = declare;
+	}
+
+	/**
+	 * 增加一段内容到 html 的 body 结尾处
+	 * @param extra
+	 */
+	public void setHtmlExtra(String extra) {
+		this.html_extra = extra;
 	}
 
 	/**
@@ -165,10 +203,17 @@ class TextDocHandler extends DefaultHandler
 		case TextParser.DOC_TYPE_PDF:
 			text_doc = new PDFDoc(parser.out_stream);
 			break;
+
 		case TextParser.DOC_TYPE_HTML:
 			text_doc = new HTMLDoc(parser.out_stream);
-			((HTMLDoc) text_doc).setLinkPaths(
-					parser.css_paths, parser.js_paths);
+			HTMLDoc html_doc = (HTMLDoc) text_doc;
+			html_doc.setLinkPaths(parser.css_paths, parser.js_paths);
+			if (parser.html_declare != null) {
+				html_doc.setDeclare(parser.html_declare);
+			}
+			if (parser.html_extra != null) {
+				html_doc.setExtra(parser.html_extra);
+			}
 			break;
 		default:
 			throw new IOException("Document type unsupported.");
