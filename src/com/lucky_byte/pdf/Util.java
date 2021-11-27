@@ -122,6 +122,11 @@ public class Util
 			{ '♣', "&#x2663;" }, { '♥', "&#x2665;" }, { '♦', "&#x2666;" },
 	};
 
+	/**
+	 * 对 XML 中的特殊字符进行 escape 处理
+	 * @param ch
+	 * @return
+	 */
 	public static String escapeXMLChars(char ch) {
 		for (int i = 0; i < xml_escape_chars.length; i++) {
 			if ((Character) xml_escape_chars[i][0] == ch) {
@@ -131,7 +136,11 @@ public class Util
 		return null;
 	}
 
-
+	/**
+	 * 对 HTML 中的特殊字符进行 escape 处理
+	 * @param ch
+	 * @return
+	 */
 	public static String escapeHTMLChars(char ch) {
 		for (int i = 0; i < html_escape_chars.length; i++) {
 			if ((Character) html_escape_chars[i][0] == ch) {
@@ -141,6 +150,11 @@ public class Util
 		return null;
 	}
 
+	/**
+	 * 对 HTML 中的特殊字符进行 escape 处理
+	 * @param string
+	 * @return
+	 */
 	public static String escapeHTMLString(String string) {
 		if (string == null) {
 			return null;
