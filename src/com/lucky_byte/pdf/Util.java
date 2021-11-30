@@ -22,11 +22,6 @@
  */
 package com.lucky_byte.pdf;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * 通用工具类
  */
@@ -169,43 +164,6 @@ public class Util
 			}
 		}
 		return builder.toString();
-	}
-
-	/**
-	 * 生成 CAP4J 平台的 JSP 页面
-	 * 这个函数是个项目专用函数，不适合在其它平台使用
-	 */
-	public static void genCAP4JJSP(InputStream xml_stream,
-			InputStream json_stream, OutputStream jsp_stream) {
-		List<String> css_paths = new ArrayList<String>();
-		List<String> js_paths = new ArrayList<String>();
-
-		TextParser parser = new TextParser(xml_stream,
-				json_stream, jsp_stream);
-
-		css_paths.add("/HTPrint/resources/css/textpdf.css");
-		parser.setCSSLinks(css_paths);
-
-		js_paths.add("/HTPrint/resources/nui/jquery-1.11.3.min.js");
-		js_paths.add("/HTPrint/resources/nui/textpdf.js");
-		parser.setJSLinks(js_paths);
-
-		parser.setHtmlDeclare("");
-		parser.setHtmlExtra(""
-				+ "    <div class=\"toolbar\">\n"
-				+ "      <button class=\"button-warning\" id=\"check-button\">检  查</button>\n"
-				+ "      <button class=\"button-success\" id=\"save-button\">保  存</button>\n"
-				+ "      <button class=\"button-secondary\" id=\"prev-button\">上一项</button>\n"
-				+ "      <button class=\"button-secondary\" id=\"next-button\">下一项</button>\n"
-				+ "      <button class=\"button-warning\" id=\"submit-button\">提交审查</button>\n"
-				+ "      <button class=\"button-error\" id=\"close-button\">关  闭</button>\n"
-				+ "    </div>\n");
-
-		try {
-			parser.genHTML();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 }
