@@ -163,7 +163,7 @@ public class DocReader
 			CharacterRun run = para.getCharacterRun(j);
 			String text = run.text().replaceAll("[\u0000-\u001f]", "");
 
-//			System.out.println("run text: " + text + " >i=" + i);
+//			System.out.println("run text: " + text + " >i=" + para_index);
 //			System.out.println("vanished: " + run.isVanished());
 //			System.out.println("special: " + run.isSpecialCharacter());
 
@@ -198,13 +198,19 @@ public class DocReader
 					appendRunAttrs(builder, run, false);
 					builder.append(" />\n");
 				}
+			} else if (text.matches("^_+$")) {
+				String vid = "vid_" + para_index + "_" + j;
+				builder.append("    <value id=\"");
+				builder.append(vid);
+				builder.append("\" minlen=\"");
+				builder.append(text.length());
+				builder.append("\"");
+				appendRunAttrs(builder, run, false);
+				builder.append(" />\n");
+				if (json_data != null) {
+					json_data.put(vid, "");
+				}
 			} else if (text.length() > 0) {
-//				System.out.println(">>> is NOT a value");
-//				if (i == 33) {
-//					for (int k = 0; k < text.length(); k++) {
-//						System.out.println(Integer.toHexString(text.charAt(k)));
-//					}
-//				}
 				builder.append("    <span");
 				appendRunAttrs(builder, run, true);
 				builder.append(">");

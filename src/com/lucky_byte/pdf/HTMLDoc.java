@@ -55,11 +55,11 @@ public class HTMLDoc extends TextDoc
 	}
 
 	public void setDeclare(String declare) {
-		
+		this.declare = declare;
 	}
 
 	public void setExtra(String extra) {
-		
+		this.extra = extra;
 	}
 
 	private boolean writeStream(String string) {
