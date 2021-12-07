@@ -16,9 +16,11 @@ public class PDFProcessTest
 		PDFProcess pdfProcess =new PDFProcess(
 				new FileInputStream("tests/test.pdf"),
 				new FileOutputStream("tests/test2.pdf"));
-		pdfProcess.addTextMarker("这是一个测试水印", 0.4f, 45, 18,
+		pdfProcess.addTextMarker("测试水印", 0.4f, 45, 18,
 				PDFProcess.MARKER_STYLE_FULL);
-		pdfProcess.addImgMarker("tests/logo-32.png", -32, 0, 32, 32, 1.0f, true);
+		pdfProcess.addImgMarker("tests/logo-32.png",
+				-32, 0, 32, 32, 1.0f, false);
+		pdfProcess.addQRCode("qrcode 以及中文");
 		pdfProcess.finish();
 	}
 }

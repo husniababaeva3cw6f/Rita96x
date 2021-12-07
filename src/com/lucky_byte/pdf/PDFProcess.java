@@ -22,9 +22,18 @@
  */
 package com.lucky_byte.pdf;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Hashtable;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.Writer;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.DocumentException;
@@ -36,7 +45,6 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfGState;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
-
 
 /**
  * PDF 后期处理
@@ -89,6 +97,10 @@ public class PDFProcess
 		return base_font;
 	}
 
+	/**
+	 * 结束添加内容
+	 * @throws IOException
+	 */
 	public void finish() throws IOException {
 		try {
 			this.stamper.close();
@@ -97,6 +109,15 @@ public class PDFProcess
 		}
 	}
 
+	/**
+	 * 添加一段文字水印
+	 * @param text
+	 * @param opacity
+	 * @param angle
+	 * @param font_size
+	 * @param style
+	 * @throws IOException
+	 */
 	public void addTextMarker(String text, float opacity,
 			int angle, int font_size, int style) throws IOException {
 		int total_pages = reader.getNumberOfPages();
@@ -139,6 +160,17 @@ public class PDFProcess
 		}
 	}
 
+	/**
+	 * 添加一个图片
+	 * @param img_filename
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @param opacity
+	 * @param only_first_page
+	 * @throws IOException
+	 */
 	public void addImgMarker(String img_filename, float x, float y,
 			float width, float height, float opacity,
 			boolean only_first_page) throws IOException {
@@ -175,6 +207,43 @@ public class PDFProcess
 				throw new IOException(e);
 			}
 		}
+	}
+
+	/**
+	 * 生成二维码图片
+	 * @param text
+	 * @throws IOException 
+	 */
+	private void createQRCode(String contents, int width,
+			int height, File img_file) throws IOException {
+		try {
+			Hashtable<EncodeHintType, Object> hints =
+					new Hashtable<EncodeHintType, Object>();
+	
+			hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");  
+			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+
+			Writer writer = new MultiFormatWriter();
+			BitMatrix bitMatrix = writer.encode(contents,
+					BarcodeFormat.QR_CODE, width, height, hints);
+
+			MatrixToImageWriter.writeToPath(bitMatrix, "png", img_file.toPath());
+		} catch (Exception ex) {
+			throw new IOException(ex);
+		}
+	}
+
+	/**
+	 * 添加一个二维码到第一页
+	 * @param contents
+	 * @throws IOException
+	 */
+	public void addQRCode(String contents) throws IOException {
+		int width = 128, height = 128;
+		File tmpfile = File.createTempFile("qrcode", ".png");
+		createQRCode(contents, width, height, tmpfile);
+		addImgMarker(tmpfile.getAbsolutePath(),
+				-width, 0, width, height, 1.0f, true);
 	}
 
 }
