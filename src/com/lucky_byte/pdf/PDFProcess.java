@@ -152,7 +152,7 @@ public class PDFProcess
 				for (float y = height - 20; y > -height + 20; y -= 100) {
 					for (float x = 10; x < width - 10; x += text_width) {
 						content.showTextAligned(Element.ALIGN_JUSTIFIED_ALL,
-								text, x, y, angle); 
+								text, x, y, angle);
 					}
 				}
 				break;
@@ -221,7 +221,7 @@ public class PDFProcess
 			Hashtable<EncodeHintType, Object> hints =
 					new Hashtable<EncodeHintType, Object>();
 	
-			hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");  
+			hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
 
 			Writer writer = new MultiFormatWriter();
@@ -283,7 +283,7 @@ public class PDFProcess
 			Rectangle page_rect = reader.getPageSizeWithRotation(i);
 			String text = String.format("- 第 %d 页 共 %d 页 -", i, total_pages);
 			content.showTextAligned(Element.ALIGN_CENTER,
-					text, page_rect.getWidth() / 2, 30, 0); 
+					text, page_rect.getWidth() / 2, 30, 0);
 			content.endText();
 		}
 	}
