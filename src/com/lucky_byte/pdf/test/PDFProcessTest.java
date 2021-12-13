@@ -21,6 +21,8 @@ public class PDFProcessTest
 		pdfProcess.addImgMarker("tests/logo-32.png",
 				-32, 0, 32, 32, 1.0f, false);
 		pdfProcess.addQRCode("qrcode 以及中文");
+//		pdfProcess.addHeader("H中文ello");
+		pdfProcess.addPageNum();
 		pdfProcess.finish();
 	}
 }

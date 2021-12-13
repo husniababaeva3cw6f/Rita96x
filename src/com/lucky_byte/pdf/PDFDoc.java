@@ -156,7 +156,8 @@ public class PDFDoc extends TextDoc
 			document.addKeywords("TextPDF");
 			writer = PdfWriter.getInstance(document, out_stream);
 			writer.setCompressionLevel(9);
-//			writer.setPageEvent(new PDFDocPageEvent());
+			document.setMargins(page_margin_left, page_margin_right,
+					page_margin_top, page_margin_bottom);
 			document.open();
 			return true;
 		} catch (Exception e) {

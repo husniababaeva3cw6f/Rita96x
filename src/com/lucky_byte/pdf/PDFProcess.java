@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.Hashtable;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -43,6 +44,7 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfGState;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
 
@@ -120,14 +122,13 @@ public class PDFProcess
 	 */
 	public void addTextMarker(String text, float opacity,
 			int angle, int font_size, int style) throws IOException {
-		int total_pages = reader.getNumberOfPages();
-		Rectangle page_rect;
-
 		if (text == null || text.length() == 0)
 			return;
 
-		for (int i = 1; i <= total_pages; i++) {  
-			page_rect = reader.getPageSizeWithRotation(i);
+		int total_pages = reader.getNumberOfPages();
+
+		for (int i = 1; i <= total_pages; i++) {
+			Rectangle page_rect = reader.getPageSizeWithRotation(i);
 			float width = page_rect.getWidth();
 			float height = page_rect.getHeight();
 			float text_width = font_size * text.length();
@@ -135,7 +136,7 @@ public class PDFProcess
 			PdfGState gs = new PdfGState();
 			gs.setFillOpacity(opacity);
 
-			PdfContentByte content = stamper.getUnderContent(i); 
+			PdfContentByte content = stamper.getUnderContent(i);
 			content.beginText();
 			content.setGState(gs);
 			content.setColorFill(color);
@@ -246,4 +247,44 @@ public class PDFProcess
 				-width, 0, width, height, 1.0f, true);
 	}
 
+	/**
+	 * 添加页眉
+	 * @throws IOException 
+	 * @throws MalformedURLException 
+	 */
+	public void addHeader(String text) throws IOException {
+		for (int i = 1; i <= reader.getNumberOfPages(); i++) {
+			Rectangle page_size = reader.getPageSize(i);
+			PdfPTable table = new PdfPTable(1);
+			table.setTotalWidth(400);
+			table.setLockedWidth(true);
+			table.getDefaultCell().setFixedHeight(20);
+			table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+			table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_LEFT);
+			table.addCell(text);
+			table.writeSelectedRows(0, -1, 50, page_size.getHeight() - 20,
+					stamper.getOverContent(i));
+		}
+	}
+
+	public void addPageNum() throws IOException {
+		int total_pages = reader.getNumberOfPages();
+
+		PdfGState gs = new PdfGState();
+		gs.setFillOpacity(1.0f);
+
+		for (int i = 1; i <= total_pages; i++) {
+			PdfContentByte content = stamper.getUnderContent(i);
+			content.beginText();
+			content.setGState(gs);
+			content.setColorFill(BaseColor.BLACK);
+			content.setFontAndSize(getBaseFont(font_family), 11);
+
+			Rectangle page_rect = reader.getPageSizeWithRotation(i);
+			String text = String.format("- 第 %d 页 共 %d 页 -", i, total_pages);
+			content.showTextAligned(Element.ALIGN_CENTER,
+					text, page_rect.getWidth() / 2, 30, 0); 
+			content.endText();
+		}
+	}
 }

@@ -42,7 +42,7 @@ public abstract class TextDoc
 	protected int page_margin_left = 50;
 	protected int page_margin_right = 50;
 	protected int page_margin_top = 50;
-	protected int page_margin_bottom = 50;
+	protected int page_margin_bottom = 56;
 	protected String encoding = "UTF-8";
 
 	public TextDoc(OutputStream out_stream) {
