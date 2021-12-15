@@ -141,6 +141,15 @@ public class PDFDoc extends TextDoc
 				Element.ALIGN_LEFT, 22.0f, 6.0f, 0.0f));
 	}
 
+	private void addMetaInfo() {
+		document.addTitle("TextPdf 合同");
+		document.addSubject("本合同带有防伪标识，请登录系统核查");
+		document.addAuthor("Lucky Byte, Inc.(诺百)");
+		document.addKeywords("TextPdf, PDF, Lucky Byte Inc., 诺百");
+		document.addCreator("TextPdf 版本 " + Version.VERSION +
+				" - http://git.oschina.net/lucky-byte/textpdf");
+	}
+
 	/**
 	 * 打开 PDF 文档进行操作
 	 * @return 成功或失败
@@ -149,15 +158,11 @@ public class PDFDoc extends TextDoc
 	public boolean open() {
 		try {
 			document = new Document();
-			document.addCreator("TextPDF " + Version.VERSION);
-			document.addCreationDate();
-			document.addAuthor("TextPDF");
-			document.addLanguage("zh_CN");
-			document.addKeywords("TextPDF");
-			writer = PdfWriter.getInstance(document, out_stream);
-			writer.setCompressionLevel(9);
 			document.setMargins(page_margin_left, page_margin_right,
 					page_margin_top, page_margin_bottom);
+			writer = PdfWriter.getInstance(document, out_stream);
+			writer.setCompressionLevel(9);
+			addMetaInfo();
 			document.open();
 			return true;
 		} catch (Exception e) {
