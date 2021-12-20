@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="lib/poi-3.12-20150511.jar"/>
 	<classpathentry kind="lib" path="lib/zxing-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/zxing-javase-3.2.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-1.52.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
