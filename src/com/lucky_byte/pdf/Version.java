@@ -28,7 +28,7 @@ package com.lucky_byte.pdf;
 public class Version
 {
 	final public static int MAJOR = 0;
-	final public static int MINOR = 4;
+	final public static int MINOR = 5;
 
 	final public static String VERSION =
 			String.format("%d.%d", MAJOR, MINOR);
