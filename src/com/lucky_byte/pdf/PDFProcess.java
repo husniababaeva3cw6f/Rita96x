@@ -47,6 +47,7 @@ import com.itextpdf.text.pdf.PdfGState;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * PDF 后期处理
@@ -287,4 +288,28 @@ public class PDFProcess
 			content.endText();
 		}
 	}
+
+	public static final int ALLOW_PRINTING = PdfWriter.ALLOW_PRINTING;
+	public static final int ALLOW_DEGRADED_PRINTING = PdfWriter.ALLOW_DEGRADED_PRINTING;
+	public static final int ALLOW_MODIFY_CONTENTS = PdfWriter.ALLOW_MODIFY_CONTENTS;
+	public static final int ALLOW_ASSEMBLY = PdfWriter.ALLOW_ASSEMBLY;
+	public static final int ALLOW_COPY = PdfWriter.ALLOW_COPY;
+	public static final int ALLOW_SCREENREADERS = PdfWriter.ALLOW_SCREENREADERS;
+	public static final int ALLOW_MODIFY_ANNOTATIONS = PdfWriter.ALLOW_MODIFY_ANNOTATIONS;
+	public static final int ALLOW_FILL_IN = PdfWriter.ALLOW_FILL_IN;
+
+	public void encrypt(String user_passwd, String owner_passwd,
+			int permissions) throws Exception {
+		if (owner_passwd == null) {
+			owner_passwd = "LuckyByte.TextPdf.default";
+		}
+		try {
+			stamper.setEncryption(PdfWriter.ENCRYPTION_AES_128 |
+					PdfWriter.DO_NOT_ENCRYPT_METADATA,
+					user_passwd, owner_passwd, permissions);
+		} catch (DocumentException ex) {
+			throw new Exception(ex);
+		}
+	}
+
 }

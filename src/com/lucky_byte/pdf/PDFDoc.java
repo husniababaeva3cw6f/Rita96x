@@ -161,6 +161,7 @@ public class PDFDoc extends TextDoc
 			document.setMargins(page_margin_left, page_margin_right,
 					page_margin_top, page_margin_bottom);
 			writer = PdfWriter.getInstance(document, out_stream);
+			// writer.setFullCompression();	// 需求 PDF 1.5
 			writer.setCompressionLevel(9);
 			addMetaInfo();
 			document.open();
