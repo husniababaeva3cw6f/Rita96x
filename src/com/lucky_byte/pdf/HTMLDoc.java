@@ -9,8 +9,6 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import org.xml.sax.Attributes;
 
-import com.itextpdf.text.DocumentException;
-
 /**
  * 输出 HTML 文档
  */
@@ -235,7 +233,7 @@ public class HTMLDoc extends TextDoc
 
 	@Override
 	public void writeBlock(String block_name, List<TextChunk> chunk_list)
-			throws DocumentException, IOException {
+			throws IOException {
 		if (out_stream == null || chunk_list.size() == 0)
 			return;
 
@@ -289,6 +287,12 @@ public class HTMLDoc extends TextDoc
 			return;
 		}
 		writeStream("<img src=\"" + Util.escapeHTMLString(value) + "\"/>");
+	}
+
+	@Override
+	public void writeTable(TextTable table) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

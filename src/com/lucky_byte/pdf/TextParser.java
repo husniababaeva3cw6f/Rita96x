@@ -180,7 +180,8 @@ public class TextParser
 class TextDocHandler extends DefaultHandler
 {
 	public static final String[] BLOCK_ELEMENTS = {
-			"title", "chapter", "section", "para", "pagebreak",
+			"title", "chapter", "section", "para",
+			"pagebreak", "table"
 	};
 
 	private TextParser parser;
@@ -190,6 +191,7 @@ class TextDocHandler extends DefaultHandler
 	private StringBuilder contents_builder;
 	private JSONObject json_object;
 	private JSONObject json_data;
+	private TextTable table = null;
 	
 	public TextDocHandler(TextParser parser, int doc_type)
 			throws IOException, ParseException {
@@ -347,6 +349,22 @@ class TextDocHandler extends DefaultHandler
 			}
 		}
 
+		if (qName.equalsIgnoreCase("table")) {
+			table = new TextTable();
+			table.addAttrs(attrs);
+			return;
+		}
+		if (table != null) {
+			if (!qName.equalsIgnoreCase("cell")) {
+				throw new SAXException(qName + " is not child of table");
+			}
+			TextChunk chunk = new TextChunk();
+			chunk.addAttrs(attrs);
+			table.addCell(chunk);
+			contents_builder.setLength(0);
+			return;
+		}
+
 		if (qName.equalsIgnoreCase("page")) {
 			setupPage(attrs);
 			text_doc.newPage();
@@ -453,6 +471,14 @@ class TextDocHandler extends DefaultHandler
 			return;
 		}
 
+		if (qName.equalsIgnoreCase("cell")) {
+			TextChunk chunk = table.lastCell();
+			chunk.setContents(contents_builder.toString());
+		}
+		if (qName.equalsIgnoreCase("table")) {
+			
+		}
+
 		TextChunk chunk = null;
 		try {
 			chunk = chunk_stack.pop();
@@ -495,3 +521,4 @@ class TextDocHandler extends DefaultHandler
 	}
 	
 }
+

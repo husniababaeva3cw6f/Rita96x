@@ -561,7 +561,7 @@ public class PDFDoc extends TextDoc
 	 * @throws IOException
 	 */
 	public void writeBlock(String block_name, List<TextChunk> chunk_list)
-			throws DocumentException, IOException {
+			throws IOException {
 		if (block_name == null ||
 				chunk_list == null || chunk_list.size() == 0) {
 			return;
@@ -587,7 +587,11 @@ public class PDFDoc extends TextDoc
 
 		for (PDFBlockDefault block_default : block_defaults) {
 			if (block_default.block_type == block_type) {
-				addParagraph(block_type, chunk_list, block_default);
+				try {
+					addParagraph(block_type, chunk_list, block_default);
+				} catch (DocumentException e) {
+					throw new IOException(e);
+				}
 				break;
 			}
 		}
@@ -658,6 +662,12 @@ public class PDFDoc extends TextDoc
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void writeTable(TextTable table) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
