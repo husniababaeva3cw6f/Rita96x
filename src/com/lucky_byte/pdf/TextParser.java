@@ -476,7 +476,16 @@ class TextDocHandler extends DefaultHandler
 			chunk.setContents(contents_builder.toString());
 		}
 		if (qName.equalsIgnoreCase("table")) {
-			
+			if (table.getCells().size() > 0) {
+				try {
+					text_doc.writeTable(table);
+				} catch (IOException e) {
+					throw new SAXException(e);
+				}
+			}
+			contents_builder.setLength(0);
+			table = null;
+			return;
 		}
 
 		TextChunk chunk = null;

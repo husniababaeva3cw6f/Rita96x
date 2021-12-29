@@ -1,6 +1,7 @@
 package com.lucky_byte.pdf;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +14,7 @@ public class TextTable
 	private List<TextChunk> cells;
 
 	public TextTable() {
+		attrs = new HashMap<String, String>();
 		cells = new ArrayList<TextChunk>();
 	}
 

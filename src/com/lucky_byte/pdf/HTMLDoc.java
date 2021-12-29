@@ -290,7 +290,7 @@ public class HTMLDoc extends TextDoc
 	}
 
 	@Override
-	public void writeTable(TextTable table) {
+	public void writeTable(TextTable table) throws IOException {
 		// TODO Auto-generated method stub
 		
 	}

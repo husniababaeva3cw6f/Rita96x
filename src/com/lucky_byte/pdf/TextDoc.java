@@ -86,5 +86,5 @@ public abstract class TextDoc
 	abstract public void newPage();
 	abstract public void addHRule(Attributes attrs);
 	abstract public void addImage(Attributes attrs);
-	abstract public void writeTable(TextTable table);
+	abstract public void writeTable(TextTable table) throws IOException;
 }

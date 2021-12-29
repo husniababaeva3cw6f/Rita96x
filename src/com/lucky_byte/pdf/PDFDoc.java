@@ -664,10 +664,114 @@ public class PDFDoc extends TextDoc
 		}
 	}
 
+	private PdfPTable createTable(Map<String, String> attrs)
+			throws DocumentException {
+		float width = 100;
+		int[] columns = null;
+		PdfPTable table;
+
+		String value = attrs.get("columns");
+		if (value != null) {
+			try {
+				String[] array = value.split(",");
+				columns = new int[array.length];
+				for (int i = 0; i < array.length; i++) {
+					columns[i] = Integer.parseInt(array[i]);
+				}
+			} catch (Exception ex) {
+				System.err.println("column must has a integer value");
+			}
+		}
+		if (columns == null) {
+			table = new PdfPTable(1);
+		} else {
+			table = new PdfPTable(columns.length);
+			table.setWidths(columns);
+		}
+
+		value = attrs.get("width");
+		if (value != null) {
+			try {
+				width = Float.parseFloat(value);
+			} catch (Exception ex) {
+				System.err.println("width must has a float value");
+			}
+		}
+		table.setWidthPercentage(width);
+		table.setLockedWidth(false);
+
+		return table;
+	}
+
+	private PdfPCell createTableCell(TextChunk text_chunk,
+			PDFBlockDefault block_default)
+					throws DocumentException, IOException {
+		Chunk chunk = formatChunk(text_chunk, block_default);
+		Phrase phrase = new Phrase();
+		phrase.add(chunk);
+
+		PdfPCell cell = new PdfPCell(phrase);
+		cell.setVerticalAlignment(Element.ALIGN_CENTER);
+		cell.setPadding(5);
+
+		Map<String, String> attrs = text_chunk.getAttrs();
+		String value = attrs.get("colspan");
+		if (value != null) {
+			try {
+				cell.setColspan(Integer.parseInt(value));
+			} catch (Exception ex) {
+				System.err.println("colspan must has a integer value");
+			}
+		}
+		value = attrs.get("align");
+		if (value != null) {
+			if (value.equalsIgnoreCase("left")) {
+				cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			} else if (value.equalsIgnoreCase("center")) {
+				cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+			} else if (value.equalsIgnoreCase("right")) {
+				cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+			}
+		}
+		return cell;
+	}
+
 	@Override
-	public void writeTable(TextTable table) {
-		// TODO Auto-generated method stub
-		
+	public void writeTable(TextTable table) throws IOException {
+		if (!isOpen() || table == null) {
+			return;
+		}
+		PDFBlockDefault block_default = null;
+		for (PDFBlockDefault def : this.block_defaults) {
+			if (def.block_type == BLOCK_PARA) {
+				block_default = def;
+				break;
+			}
+		}
+		PdfPTable pdf_table;
+
+		try {
+			pdf_table = createTable(table.getAttrs());
+			if (pdf_table == null) {
+				return;
+			}
+		} catch (DocumentException e1) {
+			throw new IOException(e1);
+		}
+
+		for (TextChunk text_chunk : table.getCells()) {
+			try {
+				pdf_table.addCell(createTableCell(text_chunk, block_default));
+			} catch (DocumentException e) {
+				throw new IOException(e);
+			}
+		}
+		try {
+			pdf_table.completeRow();
+			document.add(pdf_table);
+		} catch (DocumentException e) {
+			throw new IOException(e);
+		}
 	}
 
 }
