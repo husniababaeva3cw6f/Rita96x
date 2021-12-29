@@ -25,6 +25,14 @@
 
   <para space-before="30" space-after="50">可以通过 space-before 和 space-after 来设定段前段后空间。</para>
 
+  <table columns="3,3,1" width="90">
+    <cell>单元一</cell>
+    <cell>单元二</cell>
+    <cell>单元三</cell>
+    <cell colspan="2" align="center">第二行单元</cell>
+    <cell align="right">单元</cell>
+  </table>
+
   <para>下面将会强行换页，虽然本页还没有填满。</para>
 
   <pagebreak/> <!-- 强行换页 -->
@@ -33,7 +41,7 @@
 
   <para space-after="50">关于模板更详细的信息请参考 TextPDF 的 <span font-style="bold">wiki</span> 页面。</para>
 
-  <img src="logo-32.png" />
+  <img src="tests/logo-32.png" />
 
   <para font-style="italic" indent="0">本内容由  <span font-style="bold,underline,italic">Lucky Byte, Inc.</span> 呈上</para>
 
