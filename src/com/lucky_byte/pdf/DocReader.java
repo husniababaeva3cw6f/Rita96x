@@ -33,6 +33,7 @@ import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Range;
+import org.apache.poi.hwpf.usermodel.Table;
 import org.json.simple.JSONObject;
 
 /**
@@ -264,6 +265,8 @@ public class DocReader
 			title_index = getTitleIndex(range);
 		}
 
+		Table table = null;
+
 		for (int i = 0; i < range.numParagraphs(); i++) {
 			Paragraph para = range.getParagraph(i);
 			boolean is_title = false;
@@ -271,6 +274,34 @@ public class DocReader
 			if (para.pageBreakBefore()) {	// 换页符
 				builder.append("  <pagebreak />\n");
 			}
+
+			if (para.isInTable()) {		// 表格
+				if (table == null) {
+					table = range.getTable(para);
+					int cols = table.numParagraphs() / table.numRows();
+					StringBuilder columns = new StringBuilder();
+					columns.append("1");
+					for (int n = 1; n < cols; n++) {
+						if (n == cols - 1) {
+							columns.append(",0");
+						} else {
+							columns.append(",1");
+						}
+					}
+					builder.append("  <table columns=\"" +
+							columns.toString() + "\">\n");
+				}
+				builder.append("    <cell>");
+				builder.append(para.text().replaceAll("[\u0000-\u001f]", ""));
+				builder.append("</cell>\n");
+				continue;
+			} else {
+				if (table != null) {
+					builder.append("  </table>\n");
+					table = null;
+				}
+			}
+
 			if (ignore_blank_para && para.numCharacterRuns() == 0) {
 				continue;
 			}
