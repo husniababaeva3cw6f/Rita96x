@@ -291,8 +291,50 @@ public class HTMLDoc extends TextDoc
 
 	@Override
 	public void writeTable(TextTable table) throws IOException {
-		// TODO Auto-generated method stub
-		
+		if (!isOpen() || table == null) {
+			return;
+		}
+		Map<String, String> attrs = table.getAttrs();
+		int[] columns = null;
+
+		String value = attrs.get("columns");
+		if (value != null) {
+			try {
+				String[] array = value.split(",");
+				columns = new int[array.length];
+				int total = 0;
+				for (int i = 0; i < array.length; i++) {
+					columns[i] = Integer.parseInt(array[i]);
+					total += columns[i];
+				}
+				for (int i = 0; i < columns.length; i++) {
+					columns[i] = columns[i] * 100 / total;
+				}
+			} catch (Exception ex) {
+				System.err.println("column must has a integer value");
+			}
+		}
+		if (columns == null) {
+			return;
+		}
+
+		writeStream("    <table border=\"2\" width=\"100%\">\n");
+		for (int i = 0; i < table.getCells().size(); i++) {
+			int colno = i % columns.length;
+			if (colno == 0) {
+				if (i > 0) {
+					writeStream("      </tr>\n");
+				}
+				writeStream("      <tr>\n");
+			}
+			if (columns[colno] > 0) {
+				TextChunk text_chunk = table.getCells().get(i);
+				writeStream("        <td width=\"" + columns[colno] + "%\">" +
+						text_chunk.getContents() + "</td>\n");
+			}
+		}
+		writeStream("      </tr>\n");
+		writeStream("    </table>\n");
 	}
 
 }

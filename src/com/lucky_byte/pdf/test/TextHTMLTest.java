@@ -32,7 +32,7 @@ public class TextHTMLTest
 					new FileOutputStream(htmlfile));
 			parser.setCSSLinks(css_urls);
 			parser.setJSLinks(js_urls);
-			parser.setOutputEncoding("GB18030");
+			parser.setOutputEncoding("utf-8");
 			parser.genHTML();
 		} catch (Exception ex) {
 			ex.printStackTrace();
