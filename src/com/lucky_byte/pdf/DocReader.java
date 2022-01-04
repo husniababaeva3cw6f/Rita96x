@@ -291,8 +291,9 @@ public class DocReader
 					builder.append("  <table columns=\"" +
 							columns.toString() + "\">\n");
 				}
+				String text = para.text().replaceAll("[\u0000-\u001f]", "");
 				builder.append("    <cell>");
-				builder.append(para.text().replaceAll("[\u0000-\u001f]", ""));
+				builder.append(textEscape(text));
 				builder.append("</cell>\n");
 				continue;
 			} else {
