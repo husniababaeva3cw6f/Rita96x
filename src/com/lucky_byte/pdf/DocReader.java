@@ -164,7 +164,7 @@ public class DocReader
 			CharacterRun run = para.getCharacterRun(j);
 			String text = run.text().replaceAll("[\u0000-\u001f]", "");
 
-//			System.out.println("run text: " + text + " >i=" + para_index);
+			System.out.println("run text: " + text + " >i=" + para_index);
 //			System.out.println("vanished: " + run.isVanished());
 //			System.out.println("special: " + run.isSpecialCharacter());
 
@@ -173,7 +173,10 @@ public class DocReader
 				continue;
 			}
 			// 忽略级链接
-			if (text.matches(" HYPERLINK .+")) {
+			if (text.matches(" HYPERLINK .+") ||
+					text.matches("HYPERLINK .+") ||
+					text.matches(" PAGEREF .+") ||
+					text.matches(" TOC .+")) {
 				continue;
 			}
 
