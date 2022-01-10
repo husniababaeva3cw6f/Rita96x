@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 
 import org.junit.Test;
 
@@ -23,13 +22,9 @@ public class DocReaderTest
 					new FileOutputStream("tests/test.json");
 
 			DocReader reader = new DocReader();
-			reader.setXSLUrl(new URL(new URL("file:"), "textpdf.xsl"));
 			reader.setAutoTitle(true);
 			reader.ignoreBlankPara(true);
 			reader.read(doc_stream, xml_stream, json_stream);
-
-			doc_stream.close();
-			xml_stream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
