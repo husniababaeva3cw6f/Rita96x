@@ -34,6 +34,8 @@ import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.hwpf.usermodel.Table;
+import org.apache.poi.hwpf.usermodel.TableCell;
+import org.apache.poi.hwpf.usermodel.TableRow;
 import org.json.simple.JSONObject;
 
 /**
@@ -281,11 +283,15 @@ public class DocReader
 			if (para.isInTable()) {		// 表格
 				if (table == null) {
 					table = range.getTable(para);
-					int cols = table.numParagraphs() / table.numRows();
+					int max_cells = 0;
+					for (int m = 0; m < table.numRows(); m++) {
+						TableRow row = table.getRow(m);
+						max_cells = Math.max(max_cells, row.numCells());
+					}
 					StringBuilder columns = new StringBuilder();
 					columns.append("1");
-					for (int n = 1; n < cols; n++) {
-						if (n == cols - 1) {
+					for (int n = 1; n <= max_cells; n++) {
+						if (n == max_cells) {
 							columns.append(",0");
 						} else {
 							columns.append(",1");

@@ -241,11 +241,11 @@ public class PDFProcess
 	 * @throws IOException
 	 */
 	public void addQRCode(String contents) throws IOException {
-		int width = 128, height = 128;
+		int width = 80;
 		File tmpfile = File.createTempFile("qrcode", ".png");
-		createQRCode(contents, width, height, tmpfile);
+		createQRCode(contents, 256, 256, tmpfile);
 		addImgMarker(tmpfile.getAbsolutePath(),
-				-width, 0, width, height, 1.0f, true);
+				-width + 10, 0, width, width, 1.0f, true);
 	}
 
 	/**
