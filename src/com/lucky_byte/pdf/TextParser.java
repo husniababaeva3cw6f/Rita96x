@@ -66,6 +66,7 @@ public class TextParser
 	String out_encoding = null;
 	String html_declare = null;
 	String html_extra = null;
+	int html_type = HTMLDoc.TYPE_INPUT;
 
 	public TextParser(InputStream xml_stream, InputStream json_stream,
 			OutputStream out_stream) {
@@ -138,6 +139,14 @@ public class TextParser
 	 */
 	public void setHtmlExtra(String extra) {
 		this.html_extra = extra;
+	}
+
+	/**
+	 * 设置 HTML 输出类型
+	 * @param type
+	 */
+	public void setHtmlType(int type) {
+		this.html_type = type;
 	}
 
 	/**

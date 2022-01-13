@@ -14,12 +14,16 @@ import org.xml.sax.Attributes;
  */
 public class HTMLDoc extends TextDoc
 {
+	static public final int TYPE_INPUT = 1;
+	static public final int TYPE_COMBO = 2;
+
 	private boolean is_open = false;
 	private JSONObject json_object;
 	private List<String> css_paths;
 	private List<String> js_paths;
 	private String declare = null;
 	private String extra = null;
+	private int type = TYPE_INPUT;
 
 	private String html_open = ""
 			+ "<!DOCTYPE html>\n"
@@ -58,6 +62,10 @@ public class HTMLDoc extends TextDoc
 
 	public void setExtra(String extra) {
 		this.extra = extra;
+	}
+
+	public void setType(int type) {
+		this.type = type;
 	}
 
 	private boolean writeStream(String string) {
@@ -219,16 +227,38 @@ public class HTMLDoc extends TextDoc
 
 	private void writeValue(TextChunk chunk) {
 		Map<String, String> attrs = chunk.getAttrs();
-		writeStream("<input type=\"text\"");
-		String value = attrs.get("id");
-		if (value != null && value.length() > 0) {
-			writeStream(" id=\"" + value + "\" name=\"" + value + "\"");
+		String id = attrs.get("id");
+		String minlen = attrs.get("minlen");
+
+		switch (type) {
+		case TYPE_INPUT:
+			writeStream("<input type=\"text\"");
+			if (id != null && id.length() > 0) {
+				writeStream(" id=\"" + id + "\" name=\"" + id + "\"");
+			}
+			if (minlen != null && minlen.length() > 0) {
+				writeStream(" size=\"" + minlen + "\"");
+			}
+			writeStream(" />");
+			break;
+		case TYPE_COMBO:
+			writeStream("<input type=\"text\"");
+			if (minlen != null && minlen.length() > 0) {
+				writeStream(" size=\"" + minlen + "\"");
+			}
+			writeStream(" readonly=\"readonly\"");
+			writeStream(" />");
+
+			writeStream("<select");
+			if (id != null && id.length() > 0) {
+				writeStream(" id=\"" + id + "\" name=\"" + id + "\"");
+			}
+			writeStream(">\n");
+			writeStream("<option value =\"1\">必输</option>\n");
+			writeStream("<option value =\"0\">可选</option>\n");
+			writeStream("</select>\n");
+			break;
 		}
-		value = attrs.get("minlen");
-		if (value != null && value.length() > 0) {
-			writeStream(" size=\"" + value + "\"");
-		}
-		writeStream(" />");
 	}
 
 	@Override
