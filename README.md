@@ -36,7 +36,7 @@ TextPDF 的模板只支持简单的排版格式（[查看模板说明](http://gi
 
 ### 转换 .doc 文件
 
-TextPDF 可以将`.doc`文件转换成 TextPDF 的 XML 模板文件，对于`.doc`中的`___________`会自动转换为 XML 模板的 `<value>`标签，这样后续再通过整合 JSON 数据来合成最终的 PDF 文件。
+TextPDF 可以将`.doc`文件转换成 TextPDF 的 XML 模板文件，对于`.doc`中的`___________`(带有下划线的空白)会自动转换为 XML 模板的 `<value>`标签，这样后续再通过整合 JSON 数据来合成最终的 PDF 文件。
 
 ## JSON 数据
 
@@ -105,3 +105,5 @@ try {
 ```
 
 > 从 0.3 开始，`TextPDF.gen`方法被废弃(因为其不能提供额外的选项)，应该直接使用 TextParser 对象，请参考`TextPDF.java`中的`main`函数。
+
+除了能够生成 PDF 文档外，TextPDF 也可以生成 HTML 文件(用于编辑)，以及将 .doc 文件转换为 XML 模板，使用方法请参考 [API 说明](http://git.oschina.net/lucky-byte/textpdf/wikis/API)。
